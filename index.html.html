@@ -1111,7 +1111,15 @@
             let criticalContracts = 0;
             let warningContracts = 0;
 
+            let iqamaCriticalStaff = [];
+            let iqamaWarningStaff = [];
+            let permitCriticalStaff = [];
+            let permitWarningStaff = [];
+            let contractCriticalStaff = [];
+            let contractWarningStaff = [];
+
             activeEmployees.forEach(emp => {
+                const name = emp[keyEmpName] || '';
                 const remIqama = parseNumeric(emp[keyRemIqama]);
                 const remWorkPermit = parseNumeric(emp[keyRemWorkPermit]);
                 const remContract = parseNumeric(emp[keyRemContract]);
@@ -1120,8 +1128,10 @@
                 if (remIqama > 0) {
                     if (remIqama <= 30) {
                         criticalIqamas++;
+                        iqamaCriticalStaff.push({ name, days: remIqama });
                     } else if (remIqama <= 90) {
                         warningIqamas++;
+                        iqamaWarningStaff.push({ name, days: remIqama });
                     }
                 }
 
@@ -1129,8 +1139,10 @@
                 if (remWorkPermit > 0) {
                     if (remWorkPermit <= 30) {
                         criticalWorkPermits++;
+                        permitCriticalStaff.push({ name, days: remWorkPermit });
                     } else if (remWorkPermit <= 90) {
                         warningWorkPermits++;
+                        permitWarningStaff.push({ name, days: remWorkPermit });
                     }
                 }
 
@@ -1138,8 +1150,10 @@
                 if (remContract > 0) {
                     if (remContract <= 30) {
                         criticalContracts++;
+                        contractCriticalStaff.push({ name, days: remContract });
                     } else if (remContract <= 90) {
                         warningContracts++;
+                        contractWarningStaff.push({ name, days: remContract });
                     }
                 }
             });
@@ -1154,22 +1168,68 @@
             const contractBadgeClass = criticalContracts > 0 ? 'danger' : (warningContracts > 0 ? 'warning' : 'success');
             const contractBadgeText = criticalContracts > 0 ? 'حرِج' : (warningContracts > 0 ? 'تنبيه' : 'مستقر');
 
+            // دالة مساعدة لإنشاء HTML لمجموعات الموظفين المهددين بانتهاء الوثائق
+            function renderStaffList(criticalList, warningList) {
+                if (criticalList.length === 0 && warningList.length === 0) {
+                    return '<span style="color: var(--accent-green); font-size: 11px;">✓ جميع الموظفين مستقرين (أكثر من 90 يوم)</span>';
+                }
+                
+                let html = '<div style="display: flex; flex-direction: column; gap: 4px; max-height: 120px; overflow-y: auto; padding-right: 5px; margin-top: 8px; border-top: 1px dashed var(--border-color); padding-top: 6px;">';
+                
+                criticalList.forEach(staff => {
+                    html += `<div style="display: flex; align-items: center; gap: 6px; font-size: 11px;">
+                        <span style="width: 6px; height: 6px; border-radius: 50%; background-color: var(--accent-red); display: inline-block;"></span>
+                        <span style="color: var(--accent-red); font-weight: bold;">${staff.name}</span>
+                        <span style="color: var(--text-muted); font-size: 10px;">(حرج: متبقي ${staff.days} يوم)</span>
+                    </div>`;
+                });
+
+                warningList.forEach(staff => {
+                    html += `<div style="display: flex; align-items: center; gap: 6px; font-size: 11px;">
+                        <span style="width: 6px; height: 6px; border-radius: 50%; background-color: var(--accent-orange); display: inline-block;"></span>
+                        <span style="color: var(--accent-orange); font-weight: bold;">${staff.name}</span>
+                        <span style="color: var(--text-muted); font-size: 10px;">(تنبيه: متبقي ${staff.days} يوم)</span>
+                    </div>`;
+                });
+
+                html += '</div>';
+                return html;
+            }
+
             const docsTable = document.getElementById('documentsTableBody');
             docsTable.innerHTML = `
                 <tr>
-                    <td>متابعة وثائق الهوية/الإقامة من واقع الصيانة</td>
-                    <td><strong>${criticalIqamas} حرِج (≤30 يوم) | ${warningIqamas} تنبيه (≤90 يوم)</strong></td>
-                    <td><span class="badge ${iqamaBadgeClass}">${iqamaBadgeText}</span></td>
+                    <td style="vertical-align: top;">
+                        <div style="font-weight: bold;">متابعة وثائق الهوية/الإقامة من واقع الصيانة</div>
+                        ${renderStaffList(iqamaCriticalStaff, iqamaWarningStaff)}
+                    </td>
+                    <td style="vertical-align: top; font-weight: bold;">
+                        ${criticalIqamas} حرِج (≤30 يوم) <br>
+                        ${warningIqamas} تنبيه (≤90 يوم)
+                    </td>
+                    <td style="vertical-align: top;"><span class="badge ${iqamaBadgeClass}">${iqamaBadgeText}</span></td>
                 </tr>
                 <tr>
-                    <td>متابعة رخص العمل المتبقية للموظفين</td>
-                    <td><strong>${criticalWorkPermits} حرِج (≤30 يوم) | ${warningWorkPermits} تنبيه (≤90 يوم)</strong></td>
-                    <td><span class="badge ${permitBadgeClass}">${permitBadgeText}</span></td>
+                    <td style="vertical-align: top;">
+                        <div style="font-weight: bold;">متابعة رخص العمل المتبقية للموظفين</div>
+                        ${renderStaffList(permitCriticalStaff, permitWarningStaff)}
+                    </td>
+                    <td style="vertical-align: top; font-weight: bold;">
+                        ${criticalWorkPermits} حرِج (≤30 يوم) <br>
+                        ${warningWorkPermits} تنبيه (≤90 يوم)
+                    </td>
+                    <td style="vertical-align: top;"><span class="badge ${permitBadgeClass}">${permitBadgeText}</span></td>
                 </tr>
                 <tr>
-                    <td>متابعة مدد انتهاء عقود العمل الفعلية</td>
-                    <td><strong>${criticalContracts} حرِج (≤30 يوم) | ${warningContracts} تنبيه (≤90 يوم)</strong></td>
-                    <td><span class="badge ${contractBadgeClass}">${contractBadgeText}</span></td>
+                    <td style="vertical-align: top;">
+                        <div style="font-weight: bold;">متابعة مدد انتهاء عقود العمل الفعلية</div>
+                        ${renderStaffList(contractCriticalStaff, contractWarningStaff)}
+                    </td>
+                    <td style="vertical-align: top; font-weight: bold;">
+                        ${criticalContracts} حرِج (≤30 يوم) <br>
+                        ${warningContracts} تنبيه (≤90 يوم)
+                    </td>
+                    <td style="vertical-align: top;"><span class="badge ${contractBadgeClass}">${contractBadgeText}</span></td>
                 </tr>
             `;
 
