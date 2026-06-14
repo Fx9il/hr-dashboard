@@ -73,7 +73,21 @@
             margin-bottom: 25px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+        }
+
+        /* تنسيق الشعار المرفق والتحكم به */
+        .logo-img {
+            height: 45px;
+            width: auto;
+            border-radius: 6px;
+            object-fit: contain;
+            transition: filter 0.3s ease;
+        }
+
+        /* دمج فلتر ذكي لعكس ألوان الشعار تلقائياً في الوضع الداكن ليناسب الخلفيات الغامقة */
+        body.dark-mode .logo-img {
+            filter: invert(1) contrast(1.15) brightness(1.15);
         }
 
         .filter-section {
@@ -430,8 +444,9 @@
 
     <!-- القائمة الجانبية للربط والتصفية -->
     <div class="sidebar">
+        <!-- منطقة الشعار الذكية والهوية البصرية الجديدة للمؤسسة -->
         <div class="logo-area">
-            <i class="fa-solid fa-building-user"></i>
+            <img src="لوقو  صاد.jpg.jpeg" class="logo-img" alt="لوجو صاد" onerror="this.style.display='none'" />
             <span>بوابة الموارد البشرية</span>
         </div>
         
@@ -1169,26 +1184,29 @@
             const contractBadgeText = criticalContracts > 0 ? 'حرِج' : (warningContracts > 0 ? 'تنبيه' : 'مستقر');
 
             // دالة مساعدة لإنشاء HTML لمجموعات الموظفين المهددين بانتهاء الوثائق
-            function renderStaffList(criticalList, warningList) {
+            // تم التحديث بناءً على طلبك لتعرض: اسم الموظف - نوع الإجراء - كم باقي يوم
+            function renderStaffList(criticalList, warningList, docTypeName) {
                 if (criticalList.length === 0 && warningList.length === 0) {
                     return '<span style="color: var(--accent-green); font-size: 11px;">✓ جميع الموظفين مستقرين (أكثر من 90 يوم)</span>';
                 }
                 
-                let html = '<div style="display: flex; flex-direction: column; gap: 4px; max-height: 120px; overflow-y: auto; padding-right: 5px; margin-top: 8px; border-top: 1px dashed var(--border-color); padding-top: 6px;">';
+                let html = '<div style="display: flex; flex-direction: column; gap: 6px; max-height: 120px; overflow-y: auto; padding-right: 5px; margin-top: 8px; border-top: 1px dashed var(--border-color); padding-top: 6px;">';
                 
                 criticalList.forEach(staff => {
-                    html += `<div style="display: flex; align-items: center; gap: 6px; font-size: 11px;">
-                        <span style="width: 6px; height: 6px; border-radius: 50%; background-color: var(--accent-red); display: inline-block;"></span>
+                    html += `<div style="display: flex; align-items: center; gap: 6px; font-size: 11px; line-height: 1.4;">
+                        <span style="width: 6px; height: 6px; border-radius: 50%; background-color: var(--accent-red); display: inline-block; flex-shrink: 0;"></span>
                         <span style="color: var(--accent-red); font-weight: bold;">${staff.name}</span>
-                        <span style="color: var(--text-muted); font-size: 10px;">(حرج: متبقي ${staff.days} يوم)</span>
+                        <span style="color: var(--text-muted); font-size: 11px;"> - ${docTypeName} - </span>
+                        <span style="color: var(--accent-red); font-weight: bold; font-size: 11px; flex-shrink: 0;">متبقي ${staff.days} يوم</span>
                     </div>`;
                 });
 
                 warningList.forEach(staff => {
-                    html += `<div style="display: flex; align-items: center; gap: 6px; font-size: 11px;">
-                        <span style="width: 6px; height: 6px; border-radius: 50%; background-color: var(--accent-orange); display: inline-block;"></span>
+                    html += `<div style="display: flex; align-items: center; gap: 6px; font-size: 11px; line-height: 1.4;">
+                        <span style="width: 6px; height: 6px; border-radius: 50%; background-color: var(--accent-orange); display: inline-block; flex-shrink: 0;"></span>
                         <span style="color: var(--accent-orange); font-weight: bold;">${staff.name}</span>
-                        <span style="color: var(--text-muted); font-size: 10px;">(تنبيه: متبقي ${staff.days} يوم)</span>
+                        <span style="color: var(--text-muted); font-size: 11px;"> - ${docTypeName} - </span>
+                        <span style="color: var(--accent-orange); font-weight: bold; font-size: 11px; flex-shrink: 0;">متبقي ${staff.days} يوم</span>
                     </div>`;
                 });
 
@@ -1201,7 +1219,7 @@
                 <tr>
                     <td style="vertical-align: top;">
                         <div style="font-weight: bold;">متابعة وثائق الهوية/الإقامة من واقع الصيانة</div>
-                        ${renderStaffList(iqamaCriticalStaff, iqamaWarningStaff)}
+                        ${renderStaffList(iqamaCriticalStaff, iqamaWarningStaff, 'الهوية/الإقامة')}
                     </td>
                     <td style="vertical-align: top; font-weight: bold;">
                         ${criticalIqamas} حرِج (≤30 يوم) <br>
@@ -1212,7 +1230,7 @@
                 <tr>
                     <td style="vertical-align: top;">
                         <div style="font-weight: bold;">متابعة رخص العمل المتبقية للموظفين</div>
-                        ${renderStaffList(permitCriticalStaff, permitWarningStaff)}
+                        ${renderStaffList(permitCriticalStaff, permitWarningStaff, 'رخصة العمل')}
                     </td>
                     <td style="vertical-align: top; font-weight: bold;">
                         ${criticalWorkPermits} حرِج (≤30 يوم) <br>
@@ -1223,7 +1241,7 @@
                 <tr>
                     <td style="vertical-align: top;">
                         <div style="font-weight: bold;">متابعة مدد انتهاء عقود العمل الفعلية</div>
-                        ${renderStaffList(contractCriticalStaff, contractWarningStaff)}
+                        ${renderStaffList(contractCriticalStaff, contractWarningStaff, 'عقد العمل')}
                     </td>
                     <td style="vertical-align: top; font-weight: bold;">
                         ${criticalContracts} حرِج (≤30 يوم) <br>
