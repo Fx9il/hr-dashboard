@@ -90,7 +90,7 @@
             display: block;
         }
 
-        .filter-dropdown, .input-sheet-url, .search-box {
+        .filter-dropdown, .search-box {
             width: 100%;
             background-color: var(--bg-card);
             border: 1px solid var(--border-color);
@@ -100,6 +100,93 @@
             margin-bottom: 15px;
             outline: none;
             font-size: 13px;
+        }
+
+        /* تنسيق مخصص لقائمة البحث المنسدلة الذكية */
+        .custom-select-container {
+            position: relative;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        .custom-select-trigger {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+
+        .custom-select-trigger span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 90%;
+        }
+
+        .custom-select-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-top: 5px;
+            box-shadow: 0 10px 15px -3px var(--card-shadow);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            padding: 8px;
+        }
+
+        .custom-select-dropdown.show {
+            display: flex;
+        }
+
+        .custom-select-search {
+            width: 100%;
+            background-color: var(--bg-main);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 10px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            outline: none;
+            font-size: 12px;
+        }
+
+        .custom-select-options {
+            overflow-y: auto;
+            max-height: 180px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .custom-select-option {
+            padding: 8px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-main);
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .custom-select-option:hover {
+            background-color: var(--bg-main);
+            color: var(--accent-blue);
+        }
+
+        .custom-select-option.selected {
+            background-color: var(--accent-blue);
+            color: #ffffff;
         }
 
         .btn-update {
@@ -117,27 +204,12 @@
             justify-content: center;
             gap: 8px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
         }
 
         .btn-update:hover {
             opacity: 0.9;
             transform: translateY(-1px);
-        }
-
-        .instructions-box {
-            background-color: rgba(0, 205, 255, 0.05);
-            border: 1px dashed var(--border-color);
-            padding: 12px;
-            border-radius: 6px;
-            margin-top: 15px;
-            font-size: 11px;
-            color: var(--text-muted);
-            line-height: 1.6;
-        }
-
-        .instructions-box ol {
-            padding-right: 15px;
-            margin-top: 5px;
         }
 
         /* منطقة المحتوى الرئيسية */
@@ -336,11 +408,13 @@
             margin-top: 10px;
             text-align: center;
             display: none;
+            padding: 8px;
+            border-radius: 6px;
         }
-        .status-message.success { color: var(--accent-green); }
-        .status-message.error { color: var(--accent-red); }
+        .status-message.success { background-color: rgba(0, 230, 118, 0.1); color: var(--accent-green); }
+        .status-message.error { background-color: rgba(255, 82, 82, 0.1); color: var(--accent-red); }
 
-        /* إرشادات تلميح ذكية */
+        /* إرشادات تلميح ذاسية */
         .tip-box {
             font-size: 11px;
             color: var(--text-muted);
@@ -362,40 +436,42 @@
         </div>
         
         <div class="filter-section">
-            <div class="filter-title">ربط Google Sheets الحية</div>
-            <input type="text" id="sheetUrl" class="input-sheet-url" placeholder="ضع رابط CSV المنشور هنا..." />
-            
+            <!-- زر التحديث التلقائي الفوري والمباشر -->
             <button class="btn-update" onclick="handleSyncButton()">
                 <i class="fa-solid fa-rotate"></i>
-                <span>تحديث ومزامنة البيانات</span>
+                <span>تحديث البيانات الحية</span>
             </button>
             <div id="statusMsg" class="status-message"></div>
 
             <div class="filter-title" style="margin-top: 20px;">البحث السريع والتصفية</div>
             <input type="text" id="searchName" class="search-box" placeholder="ابحث باسم الموظف أو الوظيفة..." oninput="filterData()" />
 
+            <!-- قائمة الموظفين المنسدلة الذكية مع البحث المطور -->
+            <label class="filter-title">تصفية حسب الموظف</label>
+            <div class="custom-select-container" id="employeeSelectContainer">
+                <div class="custom-select-trigger" onclick="toggleEmployeeDropdown()">
+                    <span id="selectedEmployeeLabel">الكل (عرض جميع الموظفين)</span>
+                    <i class="fa-solid fa-chevron-down"></i>
+                </div>
+                <div class="custom-select-dropdown" id="employeeDropdownMenu">
+                    <input type="text" id="employeeSearchInput" class="custom-select-search" placeholder="اكتب اسم الموظف للبحث..." oninput="filterEmployeeDropdownOptions()" />
+                    <div class="custom-select-options" id="employeeOptionsList">
+                        <!-- خيارات الموظفين سيتم توليدها ديناميكياً -->
+                    </div>
+                </div>
+            </div>
+
             <label class="filter-title">تصفية حسب الجنسية</label>
             <select id="filterNationality" class="filter-dropdown" onchange="filterData()">
                 <option value="ALL">الكل</option>
             </select>
 
-            <label class="filter-title">تصفية حسب الحالة</label>
+            <label class="filter-title">تصفية حسب الحالة الاجتماعية</label>
             <select id="filterStatus" class="filter-dropdown" onchange="filterData()">
                 <option value="ALL">الكل</option>
-                <option value="نشط">نشط</option>
-                <option value="استقالة">استقالة</option>
-                <option value="فصل">فصل</option>
+                <option value="متزوج">متزوج</option>
+                <option value="اعزب">اعزب</option>
             </select>
-
-            <div class="instructions-box">
-                <strong>💡 مزامنة فورية لمستندك:</strong>
-                <ol>
-                    <li>افتح ملف Google Sheets.</li>
-                    <li>اضغط <b>ملف</b> ⬅️ <b>مشاركة</b> ⬅️ <b>نشر على الويب</b>.</li>
-                    <li>اختر <b>قيم مفصولة بفاصلة (CSV)</b> ثم اضغط <b>نشر</b>.</li>
-                    <li>انسخ الرابط والصقه هنا للتحديث المباشر!</li>
-                </ol>
-            </div>
         </div>
     </div>
 
@@ -404,20 +480,20 @@
         
         <!-- الهيدر -->
         <div class="header">
-            <h1>لوحة مؤشرات أداء الموارد البشرية (التحليل الشامل)</h1>
+            <h1>لوحة مؤشرات أداء الموارد البشرية الحية</h1>
             <div class="header-actions">
                 <button class="btn-theme-toggle" id="themeToggleBtn" onclick="toggleTheme()">
                     <i class="fa-solid fa-moon"></i>
                     <span>الوضع الداكن</span>
                 </button>
-                <div class="user-info">تحديث حي ومباشر | تاريخ اليوم: 13 يونيو 2026</div>
+                <div class="user-info">تحديث فوري ومباشر من قوقل شيت</div>
             </div>
         </div>
 
-        <!-- كروت التوتل الإجمالي (تم تقليصها لـ 3 كروت فقط) -->
+        <!-- كروت التوتل الإجمالي (3 كروت فقط) -->
         <div class="kpi-container">
             <div class="kpi-card blue">
-                <div class="kpi-title">إجمالي الموظفين النشطين</div>
+                <div class="kpi-title">إجمالي الموظفين</div>
                 <div id="kpiTotalEmployees" class="kpi-value">--</div>
             </div>
             <div class="kpi-card green">
@@ -439,17 +515,17 @@
                 
                 <div class="salary-bar-container">
                     <div class="bar-group">
-                        <div class="bar-label-container"><span>إجمالي الرواتب الأساسية</span><strong id="lblTotalBasic">0 ر.س</strong></div>
+                        <div class="bar-label-container"><span>إجمالي الرواتب الأساسية</span><strong id="lblTotalBasic">0.00 ر.س</strong></div>
                         <div class="bar-bg"><div id="barBasicSalary" class="bar-fill" style="width: 0%; background-color: var(--accent-blue);"></div></div>
                     </div>
 
                     <div class="bar-group">
-                        <div class="bar-label-container"><span>إجمالي الرواتب مع البدلات</span><strong id="lblTotalAllowances">0 ر.س</strong></div>
+                        <div class="bar-label-container"><span>إجمالي الرواتب مع البدلات</span><strong id="lblTotalAllowances">0.00 ر.س</strong></div>
                         <div class="bar-bg"><div id="barWithAllowances" class="bar-fill" style="width: 0%; background-color: var(--accent-green);"></div></div>
                     </div>
 
                     <div class="bar-group">
-                        <div class="bar-label-container"><span>إجمالي المرتبات مع خصم التأمينات الاجتماعية</span><strong id="lblTotalDeducted">0 ر.س</strong></div>
+                        <div class="bar-label-container"><span>إجمالي المرتبات مع خصم التأمينات الاجتماعية</span><strong id="lblTotalDeducted">0.00 ر.س</strong></div>
                         <div class="bar-bg"><div id="barWithDeductions" class="bar-fill" style="width: 0%; background-color: var(--accent-orange);"></div></div>
                     </div>
                 </div>
@@ -538,7 +614,8 @@
                                 <th>الوظيفة</th>
                                 <th>الراتب الأساسي</th>
                                 <th>رصيد الإجازات</th>
-                                <th>رقم الإقامة/الهوية</th>
+                                <th>الرصيد المستخدم</th>
+                                <th>رقم الهوية/الإقامة</th>
                                 <th>الحالة</th>
                             </tr>
                         </thead>
@@ -553,29 +630,24 @@
     </div>
 
     <script>
-        // البيانات الافتراضية المطابقة تماماً لهيكل الشيت الفعلي المرفق في الصور للتشغيل الأولي الفوري
-        const defaultCSV = `رقم الموظف,أسماء الموظفين,الجنسية,العمر,تاريخ الميلاد,الحالة,الوظيفة,ايميل التواصل,الاييميل الشخصي,رقم الجوال,الراتب الأساسي,الراتب مع البدلات,الراتب الإجمالي مع خصم التأمينات,رقم الهوية/الإقامة,تاريخ انتهاء رخصة العمل,تاريخ انتهاء الهوية/الإقامة,تاريخ بداية التعيين,تاريخ بداية العقد,تاريخ انتهاء العقد,المدة المتبقية من العقد,المدة المتبقية من رخصة العمل,المدة المتبقية من الهوية/الإقامة,رصيد الاجازات,الرصيد المستخدم
-1001,أحمد العتيبي,سعودي,29,1997-05-15,نشط,مدير مبيعات,ahmed@company.com,ahmed.personal@gmail.com,0501234567,12000,15000,13500,1098765432,2027-06-15,2027-06-15,2025-10-15,2025-10-15,2027-10-15,500,400,400,30,10
-1002,سارة الغامدي,سعودي,26,2000-11-01,نشط,مهندس تقني,sara@company.com,sara.personal@gmail.com,0507654321,15000,19500,17550,1087654321,2026-12-01,2026-12-01,2025-11-01,2025-11-01,2026-11-01,150,180,180,30,5
-1003,خالد الشمري,سعودي,34,1992-04-10,نشط,أخصائي موارد بشرية,khaled@company.com,khaled.p@gmail.com,0503332221,11000,14000,12600,1077654322,2026-08-14,2026-08-01,2024-01-10,2024-01-10,2026-01-10,0,30,45,30,15
-1004,فاطمة الدوسري,سعودي,24,2002-10-15,استقالة,أخصائي تسويق,fatima@company.com,fatima.p@gmail.com,0503334444,9000,11500,10350,1077665544,2026-10-15,2026-10-15,2025-10-15,2025-10-15,2026-10-15,0,0,0,30,30
-1005,محمد الحربي,سعودي,31,1995-12-15,نشط,أخصائي مبيعات,mohammed@company.com,mohammed.p@gmail.com,0505556666,10000,13000,11700,1066554433,2026-09-30,2026-10-15,2025-12-15,2025-12-15,2026-12-15,200,110,125,30,12
-1006,عادل القحطاني,سعودي,40,1986-08-20,فصل,محاسب,adel@company.com,adel.p@gmail.com,0507778888,8000,9500,8550,1055443322,2026-02-15,2026-02-15,2023-08-20,2023-08-20,2025-08-20,0,0,0,30,30
-1007,جون سميث,أمريكي,35,1991-03-05,نشط,مستشار فني,john@company.com,john.p@gmail.com,0509998877,22000,28000,25200,2244668811,2026-11-20,2026-12-05,2025-10-22,2025-10-22,2026-10-22,120,150,165,30,8`;
+        // الرابط المباشر والدائم لقوقل شيت الخاص بك (منشور بصيغة CSV)
+        const googleSheetCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQEWyqRropBPdkCs3uoY4sbCnpS9bbgq8E03E0esi_ytb6HK390Hln-ceGysVr_h_4gp1_iST6gBqiL/pub?output=csv';
+
+        // البيانات الاحتياطية الافتراضية في حال انقطع الاتصال بالإنترنت أو تعطل الربط (تم تغليف مبالغ الآلاف بعلامات تنصيص لضمان القراءة السليمة)
+        const defaultCSV = `رقم الموظف,أسماء الموظفين,الجنسية,العمر,تاريخ الميلاد,الحالة,الوظيفة,ايميل التواصل,,الاييميل الشخصي,رقم الجوال,الراتب الأساسي,الراتب مع البدلات,الراتب الإجمالي مع خصم التأمينات,رقم الهوية/الإقامة,تاريخ انتهاء رخصة العمل,تاريخ انتهاء الهوية/الإقامة,تاريخ بداية التعيين,تاريخ بداية العقد,تاريخ انتهاء العقد,المدة المتبقية من العقد,المدة المتبقية من رخصة العمل,المدة المتبقية من الهوية/الإقامة,رصيد الاجازات,الرصيد المستخدم
+1,علي صالح علي ال صالح,السعودية,27,1999/04/20,متزوج,رئيس مجلس الإدارة,ali@company.com,,ali.p@gmail.com,0501234567,"12,000.00","15,000.00","13,500.00",1109301059,2027-06-15,2027-06-15,2025-10-15,2025-10-15,2027-10-15,500,400,400,30,10
+2,محمد جيب الله حسن جيب الله,السودان,32,1994/10/01,اعزب,الرئيس التنفيذي,mohammed@company.com,,mohammed.p@gmail.com,0507654321,"15,000.00","19,500.00","17,550.00",2504708641,2026-12-01,2026-12-01,2025-11-01,2025-11-01,2026-11-01,150,180,180,30,5
+3,أبو بكر حمزه محمد خير ابراهيم,السعودية,32,1994/07/01,متزوج,رئيس قسم الحسابات,abobakr@company.com,,abobakr.p@gmail.com,0503332221,"11,000.00","14,000.00","12,600.00",2575882507,2026-08-14,2026-08-01,2024-01-10,2024-01-10,2026-01-10,0,30,45,30,15
+4,زياد صالح علي ال صالح,السعودية,24,2002/04/14,اعزب,مدير التطوير والجودة,ziad@company.com,,ziad.p@gmail.com,0503334444,"9,000.00","11,500.00","10,350.00",1115977280,2026-10-15,2026-10-15,2025-10-15,2025-10-15,2026-10-15,0,0,0,30,30
+5,عبدالعزيز صقر احمد الغامدي,السعودية,34,1992/05/27,اعزب,رئيس قسم التسويق,abdulaziz@company.com,,abdulaziz.p@gmail.com,0505556666,"10,000.00","13,000.00","11,700.00",1080141995,2026-09-30,2026-10-15,2025-12-15,2025-12-15,2026-12-15,200,110,125,30,12`;
 
         let globalParsedData = []; // تخزين البيانات بعد المعالجة لدعم الفلترة السريعة
+        let selectedEmployeeId = "ALL"; // رقم الموظف المختار للتصفية المخصصة
 
         window.onload = function() {
             applyStoredTheme();
-
-            // التحقق من وجود رابط سابق مخزن في متصفح العميل
-            const savedUrl = localStorage.getItem('googleSheetCsvUrl');
-            if (savedUrl) {
-                document.getElementById('sheetUrl').value = savedUrl;
-                fetchSheetData(savedUrl, true); 
-            } else {
-                processCSVData(defaultCSV);
-            }
+            // جلب البيانات الحية والمزامنة فوراً عند فتح الصفحة
+            fetchSheetData();
         };
 
         // دالة تبديل الوضع (داكن / فاتح)
@@ -621,33 +693,20 @@
         }
 
         function handleSyncButton() {
-            const urlInput = document.getElementById('sheetUrl').value.trim();
-            fetchSheetData(urlInput, false);
+            fetchSheetData(false);
         }
 
-        async function fetchSheetData(urlInput, isAutoLoad = false) {
-            const statusMsg = document.getElementById('statusMsg');
-            
-            if (!urlInput) {
-                if (!isAutoLoad) {
-                    showStatus('يرجى إدخال رابط CSV الخاص بملف جوجل شيت أولاً', 'error');
-                }
-                return;
-            }
-
-            if (!urlInput.includes('pub?') || !urlInput.includes('output=csv')) {
-                showStatus('الرابط المدخل غير دقيق. تأكد من نشره كـ CSV ومطابقة التعليمات.', 'error');
-                return;
-            }
-
-            showStatus(isAutoLoad ? 'جاري تحميل البيانات تلقائياً...' : 'جاري جلب ومزامنة البيانات الحية...', 'success');
+        // دالة جلب البيانات المباشرة من قوقل شيت كـ CSV مع المحاولات المتكررة (Exponential Backoff)
+        async function fetchSheetData(isAutoLoad = true) {
+            showStatus('جاري جلب أحدث البيانات الحية من قوقل شيت...', 'success');
 
             try {
                 let response;
                 let delay = 1000;
+                // إعادة المحاولة حتى 5 مرات عند الفشل لتفادي مشاكل الاتصال المؤقتة
                 for (let i = 0; i < 5; i++) {
                     try {
-                        response = await fetch(urlInput);
+                        response = await fetch(googleSheetCsvUrl);
                         if (response.ok) break;
                     } catch (e) {
                         if (i === 4) throw e;
@@ -657,17 +716,15 @@
                 }
 
                 if (!response || !response.ok) {
-                    throw new Error('فشل الوصول إلى الرابط.');
+                    throw new Error('فشل التوصيل بقوقل شيت.');
                 }
 
                 const csvText = await response.text();
                 processCSVData(csvText);
-
-                localStorage.setItem('googleSheetCsvUrl', urlInput);
-                showStatus(isAutoLoad ? 'تم تحديث البيانات تلقائياً!' : 'تمت المزامنة بنجاح وتحديث كافة المؤشرات!', 'success');
+                showStatus('تم جلب وتحديث البيانات الحية بنجاح بنسبة 100%!', 'success');
             } catch (error) {
-                console.error(error);
-                showStatus('فشل في جلب البيانات. تم عرض النسخة الاحتياطية الافتراضية.', 'error');
+                console.error('Error fetching sheet:', error);
+                showStatus('لم نتمكن من الاتصال بقوقل شيت حالياً. تم عرض البيانات الاحتياطية.', 'error');
                 processCSVData(defaultCSV);
             }
         }
@@ -677,6 +734,13 @@
             statusMsg.innerText = msg;
             statusMsg.className = 'status-message ' + type;
             statusMsg.style.display = 'block';
+            
+            // إخفاء رسالة النجاح بعد 5 ثواني للحفاظ على جمالية التصميم
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusMsg.style.display = 'none';
+                }, 5000);
+            }
         }
 
         // تفكيك ومعالجة الـ CSV
@@ -692,18 +756,28 @@
                 const values = parseCSVLine(lines[i]);
                 const rowObj = {};
                 headers.forEach((header, idx) => {
-                    rowObj[header] = values[idx] || '';
+                    // تنظيف كامل للقيم لمنع أي فراغات مخفية قد تفسد عمليات البحث أو المقارنة
+                    rowObj[header] = (values[idx] || '').trim().replace(/['"“”]+/g, '');
                 });
                 data.push(rowObj);
             }
 
-            globalParsedData = data;
+            // [الفلترة الذكية لحل off-by-one]: استبعاد أي صفوف فارغة قادمة من تصدير قوقل شيت (صفحة B2 على الأقل تحتوي اسم)
+            const validData = data.filter(emp => {
+                const name = emp['أسماء الموظفين'] || emp['اسم الموظف'] || '';
+                return name.trim() !== '';
+            });
+
+            globalParsedData = validData;
             
             // تعبئة خيارات الفلترة بناءً على الجنسيات المتاحة في الشيت
-            populateNationalityFilter(data);
+            populateNationalityFilter(validData);
+
+            // بناء وتعبئة قائمة الموظفين المنسدلة الذكية مع البحث
+            populateEmployeeDropdown(validData);
 
             // تشغيل الحسابات والرسومات البيانية
-            renderDashboard(data);
+            renderDashboard(validData);
         }
 
         function populateNationalityFilter(data) {
@@ -713,6 +787,103 @@
             nationalities.forEach(nat => {
                 select.innerHTML += `<option value="${nat}">${nat}</option>`;
             });
+        }
+
+        // بناء قائمة البحث المنسدلة الذكية للموظفين ديناميكياً من الشيت
+        function populateEmployeeDropdown(data) {
+            const optionsList = document.getElementById('employeeOptionsList');
+            optionsList.innerHTML = '';
+
+            // إضافة خيار افتراضي لإظهار الكل
+            const allOption = document.createElement('div');
+            allOption.className = 'custom-select-option selected';
+            allOption.innerText = 'الكل (عرض جميع الموظفين)';
+            allOption.setAttribute('data-id', 'ALL');
+            allOption.onclick = () => selectEmployeeOption('ALL', 'الكل (عرض جميع الموظفين)');
+            optionsList.appendChild(allOption);
+
+            // إضافة بقية الموظفين - تم التحديث ليعرض اسم الموظف فقط بدون رقمه
+            data.forEach(emp => {
+                const empName = emp['أسماء الموظفين'] || emp['اسم الموظف'] || '';
+                const empId = emp['رقم الموظف'] || '';
+                if (empName) {
+                    const option = document.createElement('div');
+                    option.className = 'custom-select-option';
+                    option.innerText = empName; // تم إزالة (رقم: ...) لعرض الاسم فقط
+                    option.setAttribute('data-id', empId);
+                    option.onclick = () => selectEmployeeOption(empId, empName);
+                    optionsList.appendChild(option);
+                }
+            });
+        }
+
+        // التحكم بفتح وإغلاق القائمة المنسدلة للموظفين
+        function toggleEmployeeDropdown(forceState) {
+            const dropdownMenu = document.getElementById('employeeDropdownMenu');
+            if (typeof forceState === 'boolean') {
+                if (forceState) {
+                    dropdownMenu.classList.add('show');
+                    document.getElementById('employeeSearchInput').focus();
+                } else {
+                    dropdownMenu.classList.remove('show');
+                    document.getElementById('employeeSearchInput').value = '';
+                    filterEmployeeDropdownOptions(); // إعادة تصفير نتائج البحث
+                }
+            } else {
+                const isShown = dropdownMenu.classList.contains('show');
+                if (isShown) {
+                    dropdownMenu.classList.remove('show');
+                    document.getElementById('employeeSearchInput').value = '';
+                    filterEmployeeDropdownOptions();
+                } else {
+                    dropdownMenu.classList.add('show');
+                    document.getElementById('employeeSearchInput').focus();
+                }
+            }
+        }
+
+        // إغلاق المنسدلة عند الضغط في أي مكان بالخارج
+        window.addEventListener('click', function(e) {
+            const container = document.getElementById('employeeSelectContainer');
+            if (container && !container.contains(e.target)) {
+                toggleEmployeeDropdown(false);
+            }
+        });
+
+        // فرز خيارات الموظفين والبحث التفاعلي لحظياً داخل القائمة
+        function filterEmployeeDropdownOptions() {
+            const searchVal = document.getElementById('employeeSearchInput').value.toLowerCase();
+            const options = document.querySelectorAll('.custom-select-option');
+            options.forEach(opt => {
+                const text = opt.innerText.toLowerCase();
+                if (text.includes(searchVal)) {
+                    opt.style.display = 'block';
+                } else {
+                    opt.style.display = 'none';
+                }
+            });
+        }
+
+        // اختيار موظف محدد من القائمة المنسدلة وتحديث لوحة البيانات فوراً
+        function selectEmployeeOption(id, name) {
+            selectedEmployeeId = id;
+            document.getElementById('selectedEmployeeLabel').innerText = name;
+
+            // تحديث العنصر النشط بصرياً في القائمة المنسدلة
+            const options = document.querySelectorAll('.custom-select-option');
+            options.forEach(opt => {
+                if (opt.getAttribute('data-id') === id) {
+                    opt.classList.add('selected');
+                } else {
+                    opt.classList.remove('selected');
+                }
+            });
+
+            // إغلاق القائمة
+            toggleEmployeeDropdown(false);
+
+            // تحديث وتصفية البيانات
+            filterData();
         }
 
         // دالة الفلترة التلقائية عند الكتابة أو الاختيار
@@ -726,46 +897,164 @@
                 const job = (emp['الوظيفة'] || '').toLowerCase();
                 const nationality = emp['الجنسية'] || '';
                 const status = emp['الحالة'] || '';
+                const empId = emp['رقم الموظف'] || '';
 
                 const matchesSearch = name.includes(searchVal) || job.includes(searchVal);
                 const matchesNat = natVal === 'ALL' || nationality === natVal;
-                const matchesStatus = statusVal === 'ALL' || status === statusVal;
+                
+                // مطابقة مرنة للحالة الاجتماعية مع اختلاف الهمزات (اعزب / أعزب)
+                let matchesStatus = statusVal === 'ALL';
+                if (!matchesStatus) {
+                    const normStatus = status.trim();
+                    if (statusVal === 'اعزب') {
+                        matchesStatus = normStatus === 'اعزب' || normStatus === 'أعزب';
+                    } else if (statusVal === 'متزوج') {
+                        matchesStatus = normStatus === 'متزوج';
+                    }
+                }
+                
+                // شرط الموظف المختار من قائمة البحث المنسدلة الذكية
+                const matchesEmployee = selectedEmployeeId === 'ALL' || empId === selectedEmployeeId;
 
-                return matchesSearch && matchesNat && matchesStatus;
+                return matchesSearch && matchesNat && matchesStatus && matchesEmployee;
             });
 
             renderDashboard(filtered);
         }
 
+        // دالة مخصصة وفائقة الذكاء لتنظيف ومعالجة الأرقام بمختلف التنسيقات (العربية والإنجليزية وال typos)
+        function parseNumeric(val) {
+            if (val === undefined || val === null) return 0;
+            let str = val.toString().trim();
+            if (!str) return 0;
+
+            // 1. تنظيف الرموز والعملات الشائعة دون إزالة النقاط العشرية المنفصلة
+            str = str.replace(/ر\.س/g, '')
+                     .replace(/SAR/g, '')
+                     .replace(/[$%]/g, '');
+
+            // توحيد فواصل الأرقام العربية والغريبة إلى فواصل قياسية إنجليزية
+            str = str.replace(/٬/g, ',').replace(/،/g, ',');
+            str = str.replace(/٫/g, '.');
+            
+            // إزالة أي مسافات فارغة متبقية
+            str = str.replace(/\s+/g, '');
+
+            // 2. تطبيق خوارزمية ذكية لكشف الفاصلة العشرية الحقيقية:
+            // نبحث عن آخر علامة ترقيم (إما نقطة أو فاصلة)
+            let lastPuncIdx = Math.max(str.lastIndexOf(','), str.lastIndexOf('.'));
+            
+            if (lastPuncIdx !== -1) {
+                let lastPunc = str[lastPuncIdx];
+                let afterPunc = str.substring(lastPuncIdx + 1);
+                
+                // إذا كان ما بعد علامة الترقيم الأخيرة يتكون من رقم أو رقمين فقط (مثل 00 أو 20 أو 5)
+                // فهذه بالتأكيد هي الفاصلة العشرية!
+                if (/^\d{1,2}$/.test(afterPunc)) {
+                    // كل علامات الترقيم الأخرى قبلها هي فواصل آلاف ونقوم بإزالتها
+                    let before = str.substring(0, lastPuncIdx);
+                    before = before.replace(/[\.,]/g, '');
+                    str = before + '.' + afterPunc;
+                } else {
+                    // بخلاف ذلك، كل علامات الترقيم هي فواصل آلاف ونقوم بإزالتها بالكامل
+                    str = str.replace(/[\.,]/g, '');
+                }
+            } else {
+                // إذا لم توجد علامات ترقيم، نقوم بتنظيف أي حروف متبقية
+                str = str.replace(/[^0-9.-]/g, '');
+            }
+
+            let num = parseFloat(str);
+            return isNaN(num) ? 0 : num;
+        }
+
+        // دالة مساعدة لربط الأعمدة ديناميكياً بناءً على الكلمات الدلالية وتفادي أخطاء الإزاحة أو الأعمدة الفارغة
+        function findKey(sampleRow, keywords) {
+            if (!sampleRow) return null;
+            const keys = Object.keys(sampleRow);
+            
+            // 1. فحص المطابقة التامة بعد إزالة الفراغات والمسافات غير المرئية
+            for (let k of keys) {
+                const cleanK = k.trim().replace(/[\s\xa0]+/g, ' ').toLowerCase();
+                if (keywords.some(kw => cleanK === kw.toLowerCase())) {
+                    return k;
+                }
+            }
+            // 2. فحص الاحتواء الجزئي
+            for (let k of keys) {
+                const cleanK = k.trim().toLowerCase();
+                if (keywords.some(kw => cleanK.includes(kw.toLowerCase()))) {
+                    return k;
+                }
+            }
+            return null;
+        }
+
+        // المساعد الذكي لقراءة التواريخ ومعالجتها بمختلف التنسيقات (YYYY-MM-DD أو DD/MM/YYYY)
+        function parseDateString(dateStr) {
+            if (!dateStr) return null;
+            let parts = dateStr.trim().split(/[-/.]/);
+            if (parts.length === 3) {
+                if (parts[0].length === 4) {
+                    return new Date(parts[0], parts[1] - 1, parts[2]);
+                }
+                if (parts[2].length === 4) {
+                    return new Date(parts[2], parts[1] - 1, parts[0]);
+                }
+            }
+            let parsed = new Date(dateStr);
+            return isNaN(parsed.getTime()) ? null : parsed;
+        }
+
         // الدالة المركزية لحساب المؤشرات وعرضها
         function renderDashboard(data) {
-            const activeEmployees = data.filter(emp => emp['الحالة'] === 'نشط');
+            const activeEmployees = data;
             const totalActive = activeEmployees.length;
 
-            // 1. حساب تفاصيل المرتبات بدقة
+            if (totalActive === 0) return;
+            const sampleRow = activeEmployees[0];
+
+            // البحث الذكي والديناميكي عن مسميات الأعمدة الحقيقية لتجنب الإزاحة
+            const keyEmpName = findKey(sampleRow, ['أسماء الموظفين', 'اسم الموظف', 'الاسم']) || 'أسماء الموظفين';
+            const keyEmpId = findKey(sampleRow, ['رقم الموظف', 'الرقم']) || 'رقم الموظف';
+            const keyNationality = findKey(sampleRow, ['الجنسية', 'جنسية']) || 'الجنسية';
+            const keyAge = findKey(sampleRow, ['العمر', 'عمر']) || 'العمر';
+            const keyJob = findKey(sampleRow, ['الوظيفة', 'وظيفه']) || 'الوظيفة';
+            const keyBasicSalary = findKey(sampleRow, ['الأساسي', 'الاساسي']) || 'الراتب الأساسي';
+            const keyAllowances = findKey(sampleRow, ['البدلات', 'مع البدلات']) || 'الراتب مع البدلات';
+            const keyDeductions = findKey(sampleRow, ['خصم', 'التأمينات', 'التامينات']) || 'الراتب الإجمالي مع خصم التأمينات';
+            const keyStatus = findKey(sampleRow, ['الحالة', 'الحالة الاجتماعية', 'حالة']) || 'الحالة';
+            const keyHireDate = findKey(sampleRow, ['بداية التعيين', 'التعيين', 'تاريخ التعيين']) || 'تاريخ بداية التعيين';
+            const keyVacations = findKey(sampleRow, ['رصيد الاجازات', 'رصيد الإجازات']) || 'رصيد الاجازات';
+            const keyUsedVacations = findKey(sampleRow, ['الرصيد المستخدم', 'المستخدم']) || 'الرصيد المستخدم';
+            const keyRemIqama = findKey(sampleRow, ['المتبقية من الهوية', 'المتبقية من الإقامة', 'متبقي الهوية', 'متبقي الإقامة']) || 'المدة المتبقية من الهوية/الإقامة';
+            const keyRemWorkPermit = findKey(sampleRow, ['المتبقية من رخصة', 'متبقي رخصة']) || 'المدة المتبقية من رخصة العمل';
+            const keyRemContract = findKey(sampleRow, ['المتبقية من العقد', 'متبقي العقد']) || 'المدة المتبقية من العقد';
+
+            // 1. حساب تفاصيل المرتبات بدقة كاملة باستخدام معالجة parseNumeric الذكية والمفهرسة ديناميكياً
             let totalBasic = 0;
             let totalWithAllowances = 0;
             let totalWithDeductions = 0;
 
             activeEmployees.forEach(emp => {
-                totalBasic += parseFloat(emp['الراتب الأساسي']) || 0;
-                totalWithAllowances += parseFloat(emp['الراتب مع البدلات']) || 0;
-                totalWithDeductions += parseFloat(emp['الراتب الإجمالي مع خصم التأمينات']) || 0;
+                totalBasic += parseNumeric(emp[keyBasicSalary]);
+                totalWithAllowances += parseNumeric(emp[keyAllowances]);
+                totalWithDeductions += parseNumeric(emp[keyDeductions]);
             });
 
-            // 2. تحديث الكروت الإجمالية الثلاث بالقيم الحقيقية المستقاة من الملف
+            // 2. تحديث الكروت الإجمالية بالاف العناوين والأرقام
             document.getElementById('kpiTotalEmployees').innerText = totalActive;
             document.getElementById('kpiTotalSalaries').innerHTML = formatMoney(totalWithAllowances) + ' <span style="font-size: 14px;">ر.س</span>';
 
-            // 3. تحديث شارت مقارنة المرتبات بدقة ثلاثية
+            // 3. تحديث شارت مقارنة المرتبات بدقة كاملة بالفواصل وبدون أخطاء
             const maxSalaryMetric = Math.max(totalBasic, totalWithAllowances, totalWithDeductions, 1);
-            document.getElementById('lblTotalBasic').innerText = totalBasic.toLocaleString() + ' ر.س';
+            document.getElementById('lblTotalBasic').innerText = formatMoney(totalBasic) + ' ر.س';
             document.getElementById('barBasicSalary').style.width = ((totalBasic / maxSalaryMetric) * 100) + '%';
 
-            document.getElementById('lblTotalAllowances').innerText = totalWithAllowances.toLocaleString() + ' ر.س';
+            document.getElementById('lblTotalAllowances').innerText = formatMoney(totalWithAllowances) + ' ر.س';
             document.getElementById('barWithAllowances').style.width = ((totalWithAllowances / maxSalaryMetric) * 100) + '%';
 
-            document.getElementById('lblTotalDeducted').innerText = totalWithDeductions.toLocaleString() + ' ر.س';
+            document.getElementById('lblTotalDeducted').innerText = formatMoney(totalWithDeductions) + ' ر.س';
             document.getElementById('barWithDeductions').style.width = ((totalWithDeductions / maxSalaryMetric) * 100) + '%';
 
             // 4. احتساب حركة الكوادر من تاريخ 10/2025 فصاعداً
@@ -775,20 +1064,17 @@
 
             data.forEach(emp => {
                 // الفحص بناءً على تاريخ بداية التعيين
-                const hireDateStr = emp['تاريخ بداية التعيين'] || emp['تاريخ التعيين'];
+                const hireDateStr = emp[keyHireDate];
                 if (hireDateStr) {
-                    const hireDate = new Date(hireDateStr);
+                    const hireDate = parseDateString(hireDateStr);
                     const cutoffDate = new Date('2025-10-01');
-                    if (hireDate >= cutoffDate) {
+                    if (hireDate && hireDate >= cutoffDate) {
                         hiredCount++;
                     }
                 }
-
-                // الفحص عن التبدلات
-                if (emp['الحالة'] === 'استقالة') resignedCount++;
-                if (emp['الحالة'] === 'فصل') firedCount++;
             });
 
+            // تحديث مؤشرات التوظيف والزيادة الصافية
             const netHires = hiredCount - (resignedCount + firedCount);
             document.getElementById('kpiNetHires').innerText = (netHires >= 0 ? '+' : '') + netHires;
 
@@ -807,8 +1093,8 @@
             let totalUsedVacations = 0;
 
             activeEmployees.forEach(emp => {
-                totalVacations += parseFloat(emp['رصيد الاجازات']) || 0;
-                totalUsedVacations += parseFloat(emp['الرصيد المستخدم']) || 0;
+                totalVacations += parseNumeric(emp[keyVacations]);
+                totalUsedVacations += parseNumeric(emp[keyUsedVacations]);
             });
 
             document.getElementById('lblTotalVacations').innerText = totalVacations + ' يوم مستحق';
@@ -818,7 +1104,6 @@
             document.getElementById('barUsedVacations').style.width = vacationUsedPct + '%';
 
             // 6. حساب المهل المتبقية للإقامات ورخص العمل وتعبئة جدول التنبيهات
-            // تصنيف دقيق: حرج (<=30 يوماً) باللون الأحمر | تنبيه (<=90 يوماً) باللون الأصفر
             let criticalIqamas = 0;
             let warningIqamas = 0;
             let criticalWorkPermits = 0;
@@ -827,9 +1112,9 @@
             let warningContracts = 0;
 
             activeEmployees.forEach(emp => {
-                const remIqama = parseFloat(emp['المدة المتبقية من الهوية/الإقامة']) || 0;
-                const remWorkPermit = parseFloat(emp['المدة المتبقية من رخصة العمل']) || 0;
-                const remContract = parseFloat(emp['المدة المتبقية من العقد']) || 0;
+                const remIqama = parseNumeric(emp[keyRemIqama]);
+                const remWorkPermit = parseNumeric(emp[keyRemWorkPermit]);
+                const remContract = parseNumeric(emp[keyRemContract]);
 
                 // الهوية / الإقامة
                 if (remIqama > 0) {
@@ -872,7 +1157,7 @@
             const docsTable = document.getElementById('documentsTableBody');
             docsTable.innerHTML = `
                 <tr>
-                    <td>متابعة وثائق الهوية/الإقامة من واقع الشيت</td>
+                    <td>متابعة وثائق الهوية/الإقامة من واقع الصيانة</td>
                     <td><strong>${criticalIqamas} حرِج (≤30 يوم) | ${warningIqamas} تنبيه (≤90 يوم)</strong></td>
                     <td><span class="badge ${iqamaBadgeClass}">${iqamaBadgeText}</span></td>
                 </tr>
@@ -888,22 +1173,28 @@
                 </tr>
             `;
 
-            // 7. تعبئة قائمة الموظفين السفلية المفصلة
+            // 7. تعبئة قائمة الموظفين السفلية المفصلة بالترتيب الجديد المطلوب والرواتب الكاملة
             const empTable = document.getElementById('employeesTableBody');
             empTable.innerHTML = '';
             data.forEach(emp => {
-                const statusColor = emp['الحالة'] === 'نشط' ? 'success' : (emp['الحالة'] === 'استقالة' ? 'warning' : 'danger');
+                const isSingle = (emp[keyStatus] || '').trim() === 'اعزب' || (emp[keyStatus] || '').trim() === 'أعزب';
+                const statusColor = isSingle ? 'warning' : 'success';
+                const basicSalary = parseNumeric(emp[keyBasicSalary]);
+                const vacations = parseNumeric(emp[keyVacations]);
+                const usedVacations = parseNumeric(emp[keyUsedVacations]);
+                
                 empTable.innerHTML += `
                     <tr>
-                        <td>${emp['رقم الموظف'] || '--'}</td>
-                        <td><strong>${emp['أسماء الموظفين'] || '--'}</strong></td>
-                        <td>${emp['الجنسية'] || '--'}</td>
-                        <td>${emp['العمر'] || '--'}</td>
-                        <td>${emp['الوظيفة'] || '--'}</td>
-                        <td>${parseFloat(emp['الراتب الأساسي'] || 0).toLocaleString()} ر.س</td>
-                        <td>${emp['رصيد الاجازات'] || '--'} يوم</td>
+                        <td>${emp[keyEmpId] || '--'}</td>
+                        <td><strong>${emp[keyEmpName] || '--'}</strong></td>
+                        <td>${emp[keyNationality] || '--'}</td>
+                        <td>${emp[keyAge] || '--'}</td>
+                        <td>${emp[keyJob] || '--'}</td>
+                        <td>${formatMoney(basicSalary)} ر.س</td>
+                        <td>${vacations} يوم</td>
+                        <td>${usedVacations} يوم</td>
                         <td>${emp['رقم الهوية/الإقامة'] || '--'}</td>
-                        <td><span class="badge ${statusColor}">${emp['الحالة'] || '--'}</span></td>
+                        <td><span class="badge ${statusColor}">${emp[keyStatus] || '--'}</span></td>
                     </tr>
                 `;
             });
@@ -929,13 +1220,12 @@
             return result;
         }
 
+        // دالة تنسيق المبالغ لعرضها كاملة بالفواصل القياسية بدون اختصار K أو M مع خانتين عشريتين للتوافق المالي
         function formatMoney(amount) {
-            if (amount >= 1000000) {
-                return (amount / 1000000).toFixed(2) + 'M';
-            } else if (amount >= 1000) {
-                return (amount / 1000).toFixed(1) + 'K';
-            }
-            return amount.toLocaleString(undefined, {maximumFractionDigits: 0});
+            return amount.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
         }
     </script>
 </body>
