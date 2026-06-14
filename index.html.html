@@ -9,26 +9,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        /* تعريف متغيرات الألوان للوضع الداكن (الافتراضي) */
+        /* تعريف متغيرات الألوان للوضع الفاتح (الافتراضي الآن) */
         :root {
-            --bg-main: #0b111e;
-            --bg-card: #141c2f;
-            --bg-sidebar: #101726;
-            --text-main: #ffffff;
-            --text-muted: #7987a1;
-            --accent-blue: #00cdff;
-            --accent-green: #00e676;
-            --accent-orange: #ff9100;
-            --accent-red: #ff5252;
-            --border-color: #222f47;
-            --card-shadow: rgba(0, 0, 0, 0.3);
-        }
-
-
-        
-
-        /* تعريف متغيرات الألوان للوضع الفاتح */
-        body.light-mode {
             --bg-main: #f1f5f9;
             --bg-card: #ffffff;
             --bg-sidebar: #f8fafc;
@@ -40,6 +22,21 @@
             --accent-red: #dc2626;
             --border-color: #cbd5e1;
             --card-shadow: rgba(148, 163, 184, 0.1);
+        }
+
+        /* تعريف متغيرات الألوان للوضع الداكن */
+        body.dark-mode {
+            --bg-main: #0b111e;
+            --bg-card: #141c2f;
+            --bg-sidebar: #101726;
+            --text-main: #ffffff;
+            --text-muted: #7987a1;
+            --accent-blue: #00cdff;
+            --accent-green: #00e676;
+            --accent-orange: #ff9100;
+            --accent-red: #ff5252;
+            --border-color: #222f47;
+            --card-shadow: rgba(0, 0, 0, 0.3);
         }
 
         * {
@@ -153,7 +150,7 @@
             gap: 20px;
         }
 
-        /* الهيدر العلوي  000*/
+        /* الهيدر العلوي */
         .header {
             display: flex;
             justify-content: space-between;
@@ -198,7 +195,7 @@
             color: var(--text-muted);
         }
 
-        /* كروت الإجماليات (Cards KPI) - تم التعديل إلى 3 كروت */
+        /* كروت الإجماليات (Cards KPI) */
         .kpi-container {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -410,8 +407,8 @@
             <h1>لوحة مؤشرات أداء الموارد البشرية (التحليل الشامل)</h1>
             <div class="header-actions">
                 <button class="btn-theme-toggle" id="themeToggleBtn" onclick="toggleTheme()">
-                    <i class="fa-solid fa-sun"></i>
-                    <span>الوضع الفاتح</span>
+                    <i class="fa-solid fa-moon"></i>
+                    <span>الوضع الداكن</span>
                 </button>
                 <div class="user-info">تحديث حي ومباشر | تاريخ اليوم: 13 يونيو 2026</div>
             </div>
@@ -556,8 +553,8 @@
     </div>
 
     <script>
-        // البيانات الافتراضية المطابقة تماماً لهيكل الشيت الجديد المرفق بالصورة للتشغيل الأولي الفوري
-        const defaultCSV = `رقم الموظف,أسماء الموظفين,الجنسية,العمر,تاريخ الميلاد,الحالة,الوظيفة,ايميل التواصل,الايميل الشخصي,رقم الجوال,الراتب الأساسي,الراتب مع البدلات,الراتب الإجمالي مع خصم التأمينات,رقم الهوية/الإقامة,تاريخ انتهاء رخصة العمل,تاريخ انتهاء الهوية/الإقامة,تاريخ بداية التعيين,تاريخ بداية العقد,تاريخ انتهاء العقد,المدة المتبقية من العقد,المدة المتبقية من رخصة العمل,المدة المتبقية من الهوية/الإقامة,رصيد الاجازات,الرصيد المستخدم
+        // البيانات الافتراضية المطابقة تماماً لهيكل الشيت الفعلي المرفق في الصور للتشغيل الأولي الفوري
+        const defaultCSV = `رقم الموظف,أسماء الموظفين,الجنسية,العمر,تاريخ الميلاد,الحالة,الوظيفة,ايميل التواصل,الاييميل الشخصي,رقم الجوال,الراتب الأساسي,الراتب مع البدلات,الراتب الإجمالي مع خصم التأمينات,رقم الهوية/الإقامة,تاريخ انتهاء رخصة العمل,تاريخ انتهاء الهوية/الإقامة,تاريخ بداية التعيين,تاريخ بداية العقد,تاريخ انتهاء العقد,المدة المتبقية من العقد,المدة المتبقية من رخصة العمل,المدة المتبقية من الهوية/الإقامة,رصيد الاجازات,الرصيد المستخدم
 1001,أحمد العتيبي,سعودي,29,1997-05-15,نشط,مدير مبيعات,ahmed@company.com,ahmed.personal@gmail.com,0501234567,12000,15000,13500,1098765432,2027-06-15,2027-06-15,2025-10-15,2025-10-15,2027-10-15,500,400,400,30,10
 1002,سارة الغامدي,سعودي,26,2000-11-01,نشط,مهندس تقني,sara@company.com,sara.personal@gmail.com,0507654321,15000,19500,17550,1087654321,2026-12-01,2026-12-01,2025-11-01,2025-11-01,2026-11-01,150,180,180,30,5
 1003,خالد الشمري,سعودي,34,1992-04-10,نشط,أخصائي موارد بشرية,khaled@company.com,khaled.p@gmail.com,0503332221,11000,14000,12600,1077654322,2026-08-14,2026-08-01,2024-01-10,2024-01-10,2026-01-10,0,30,45,30,15
@@ -581,25 +578,29 @@
             }
         };
 
+        // دالة تبديل الوضع (داكن / فاتح)
         function toggleTheme() {
             const body = document.body;
             const btn = document.getElementById('themeToggleBtn');
             const icon = btn.querySelector('i');
             const span = btn.querySelector('span');
 
-            if (body.classList.contains('light-mode')) {
-                body.classList.remove('light-mode');
-                icon.className = 'fa-solid fa-sun';
-                span.innerText = 'الوضع الفاتح';
-                localStorage.setItem('theme', 'dark');
-            } else {
-                body.classList.add('light-mode');
+            if (body.classList.contains('dark-mode')) {
+                // تحويل للوضع الفاتح (الافتراضي)
+                body.classList.remove('dark-mode');
                 icon.className = 'fa-solid fa-moon';
                 span.innerText = 'الوضع الداكن';
                 localStorage.setItem('theme', 'light');
+            } else {
+                // تحويل للوضع الداكن
+                body.classList.add('dark-mode');
+                icon.className = 'fa-solid fa-sun';
+                span.innerText = 'الوضع الفاتح';
+                localStorage.setItem('theme', 'dark');
             }
         }
 
+        // تطبيق الثيم المحفوظ مسبقاً عند التحميل
         function applyStoredTheme() {
             const savedTheme = localStorage.getItem('theme');
             const body = document.body;
@@ -607,14 +608,15 @@
             const icon = btn.querySelector('i');
             const span = btn.querySelector('span');
 
-            if (savedTheme === 'light') {
-                body.classList.add('light-mode');
-                icon.className = 'fa-solid fa-moon';
-                span.innerText = 'الوضع الداكن';
-            } else {
-                body.classList.remove('light-mode');
+            // الوضع الافتراضي الجديد هو الفاتح (بدون كلاس)
+            if (savedTheme === 'dark') {
+                body.classList.add('dark-mode');
                 icon.className = 'fa-solid fa-sun';
                 span.innerText = 'الوضع الفاتح';
+            } else {
+                body.classList.remove('dark-mode');
+                icon.className = 'fa-solid fa-moon';
+                span.innerText = 'الوضع الداكن';
             }
         }
 
@@ -815,30 +817,8 @@
             const vacationUsedPct = totalVacations > 0 ? ((totalUsedVacations / totalVacations) * 100) : 0;
             document.getElementById('barUsedVacations').style.width = vacationUsedPct + '%';
 
-            // 6. تقدير نسبة التقييم السنوي والغياب
-            let totalEvalSum = 0;
-            let evalCount = 0;
-
-            activeEmployees.forEach(emp => {
-                const evalCol = emp['التقييم السنوي'] || emp['التقييم السنوي من قوقل فورم'] || emp['التقييم'];
-                if (evalCol) {
-                    const evalVal = parseFloat(evalCol.replace('%', ''));
-                    if (!isNaN(evalVal)) {
-                        totalEvalSum += evalVal;
-                        evalCount++;
-                    }
-                } else {
-                    const seed = (parseFloat(emp['العمر']) || 30) + (parseFloat(emp['رصيد الاجازات']) || 15);
-                    const mockEval = 75 + (seed % 21); // نسبة تقديرية بين 75% و 95%
-                    totalEvalSum += mockEval;
-                    evalCount++;
-                }
-            });
-
-            const avgEvaluation = evalCount > 0 ? (totalEvalSum / evalCount).toFixed(1) : '88.5';
-
-            // 7. حساب المهل المتبقية للإقامات ورخص العمل وتعبئة جدول التنبيهات
-            // تصنيف دقيق: حرج (<=30 يوماً) | تنبيه (>30 و <=90 يوماً)
+            // 6. حساب المهل المتبقية للإقامات ورخص العمل وتعبئة جدول التنبيهات
+            // تصنيف دقيق: حرج (<=30 يوماً) باللون الأحمر | تنبيه (<=90 يوماً) باللون الأصفر
             let criticalIqamas = 0;
             let warningIqamas = 0;
             let criticalWorkPermits = 0;
@@ -908,7 +888,7 @@
                 </tr>
             `;
 
-            // 8. تعبئة قائمة الموظفين السفلية المفصلة
+            // 7. تعبئة قائمة الموظفين السفلية المفصلة
             const empTable = document.getElementById('employeesTableBody');
             empTable.innerHTML = '';
             data.forEach(emp => {
