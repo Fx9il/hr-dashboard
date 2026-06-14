@@ -598,18 +598,21 @@
             <!-- 4. التنبيهات ومتابعة تواريخ انتهاء الوثائق والعقود -->
             <div class="chart-card">
                 <h3><i class="fa-solid fa-triangle-exclamation" style="color: var(--accent-red);"></i> تنبيهات انتهاء الإقامات، رخص العمل، والعقود</h3>
-                <table class="custom-table">
-                    <thead>
-                        <tr>
-                            <th>نوع الإجراء / الوثيقة المتبقية</th>
-                            <th>عدد الحالات (حرج / تنبيه)</th>
-                            <th>مستوى التنبيه العام</th>
-                        </tr>
-                    </thead>
-                    <tbody id="documentsTableBody">
-                        <!-- سيتم تعبئتها برمجياً بدقة بالغة من أعمدة المدد المتبقية في شيت الموظفين -->
-                    </tbody>
-                </table>
+                <div style="overflow-y: auto; flex: 1; max-height: 280px; padding-left: 5px;">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>اسم الموظف</th>
+                                <th>الوثيقة</th>
+                                <th>المهلة المتبقية</th>
+                                <th>الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody id="documentsTableBody">
+                            <!-- سيتم تعبئتها برمجياً بدقة بالغة من أعمدة المدد المتبقية في شيت الموظفين -->
+                        </tbody>
+                    </table>
+                </div>
                 <div class="tip-box">
                     حسب إعداداتك: 🔴 <b>حرج</b> متبقي ≤ 30 يوم | 🟡 <b>تنبيه</b> متبقي ≤ 90 يوم.
                 </div>
@@ -1118,20 +1121,9 @@
             const vacationUsedPct = totalVacations > 0 ? ((totalUsedVacations / totalVacations) * 100) : 0;
             document.getElementById('barUsedVacations').style.width = vacationUsedPct + '%';
 
-            // 6. حساب المهل المتبقية للإقامات ورخص العمل وتعبئة جدول التنبيهات
-            let criticalIqamas = 0;
-            let warningIqamas = 0;
-            let criticalWorkPermits = 0;
-            let warningWorkPermits = 0;
-            let criticalContracts = 0;
-            let warningContracts = 0;
-
-            let iqamaCriticalStaff = [];
-            let iqamaWarningStaff = [];
-            let permitCriticalStaff = [];
-            let permitWarningStaff = [];
-            let contractCriticalStaff = [];
-            let contractWarningStaff = [];
+            // 6. حساب المهل المتبقية للإقامات ورخص العمل وتعبئة جدول التنبيهات بشكل مباشر ومبسط للغاية
+            // تصنيف دقيق: حرج (<=30 يوماً) باللون الأحمر | تنبيه (<=90 يوماً) باللون الأصفر
+            let warningsList = [];
 
             activeEmployees.forEach(emp => {
                 const name = emp[keyEmpName] || '';
@@ -1140,116 +1132,69 @@
                 const remContract = parseNumeric(emp[keyRemContract]);
 
                 // الهوية / الإقامة
-                if (remIqama > 0) {
-                    if (remIqama <= 30) {
-                        criticalIqamas++;
-                        iqamaCriticalStaff.push({ name, days: remIqama });
-                    } else if (remIqama <= 90) {
-                        warningIqamas++;
-                        iqamaWarningStaff.push({ name, days: remIqama });
-                    }
+                if (remIqama > 0 && remIqama <= 90) {
+                    warningsList.push({
+                        name: name,
+                        type: 'الهوية/الإقامة',
+                        days: remIqama,
+                        isCritical: remIqama <= 30
+                    });
                 }
 
                 // رخصة العمل
-                if (remWorkPermit > 0) {
-                    if (remWorkPermit <= 30) {
-                        criticalWorkPermits++;
-                        permitCriticalStaff.push({ name, days: remWorkPermit });
-                    } else if (remWorkPermit <= 90) {
-                        warningWorkPermits++;
-                        permitWarningStaff.push({ name, days: remWorkPermit });
-                    }
+                if (remWorkPermit > 0 && remWorkPermit <= 90) {
+                    warningsList.push({
+                        name: name,
+                        type: 'رخصة العمل',
+                        days: remWorkPermit,
+                        isCritical: remWorkPermit <= 30
+                    });
                 }
 
                 // العقد
-                if (remContract > 0) {
-                    if (remContract <= 30) {
-                        criticalContracts++;
-                        contractCriticalStaff.push({ name, days: remContract });
-                    } else if (remContract <= 90) {
-                        warningContracts++;
-                        contractWarningStaff.push({ name, days: remContract });
-                    }
+                if (remContract > 0 && remContract <= 90) {
+                    warningsList.push({
+                        name: name,
+                        type: 'عقد العمل',
+                        days: remContract,
+                        isCritical: remContract <= 30
+                    });
                 }
             });
 
-            // تحديد مستوى التنبيه العام والـ Badge لكل نوع إجراء
-            const iqamaBadgeClass = criticalIqamas > 0 ? 'danger' : (warningIqamas > 0 ? 'warning' : 'success');
-            const iqamaBadgeText = criticalIqamas > 0 ? 'حرِج' : (warningIqamas > 0 ? 'تنبيه' : 'مستقر');
-
-            const permitBadgeClass = criticalWorkPermits > 0 ? 'danger' : (warningWorkPermits > 0 ? 'warning' : 'success');
-            const permitBadgeText = criticalWorkPermits > 0 ? 'حرِج' : (warningWorkPermits > 0 ? 'تنبيه' : 'مستقر');
-
-            const contractBadgeClass = criticalContracts > 0 ? 'danger' : (warningContracts > 0 ? 'warning' : 'success');
-            const contractBadgeText = criticalContracts > 0 ? 'حرِج' : (warningContracts > 0 ? 'تنبيه' : 'مستقر');
-
-            // دالة مساعدة لإنشاء HTML لمجموعات الموظفين المهددين بانتهاء الوثائق
-            // تم التحديث بناءً على طلبك لتعرض: اسم الموظف - نوع الإجراء - كم باقي يوم
-            function renderStaffList(criticalList, warningList, docTypeName) {
-                if (criticalList.length === 0 && warningList.length === 0) {
-                    return '<span style="color: var(--accent-green); font-size: 11px;">✓ جميع الموظفين مستقرين (أكثر من 90 يوم)</span>';
-                }
-                
-                let html = '<div style="display: flex; flex-direction: column; gap: 6px; max-height: 120px; overflow-y: auto; padding-right: 5px; margin-top: 8px; border-top: 1px dashed var(--border-color); padding-top: 6px;">';
-                
-                criticalList.forEach(staff => {
-                    html += `<div style="display: flex; align-items: center; gap: 6px; font-size: 11px; line-height: 1.4;">
-                        <span style="width: 6px; height: 6px; border-radius: 50%; background-color: var(--accent-red); display: inline-block; flex-shrink: 0;"></span>
-                        <span style="color: var(--accent-red); font-weight: bold;">${staff.name}</span>
-                        <span style="color: var(--text-muted); font-size: 11px;"> - ${docTypeName} - </span>
-                        <span style="color: var(--accent-red); font-weight: bold; font-size: 11px; flex-shrink: 0;">متبقي ${staff.days} يوم</span>
-                    </div>`;
-                });
-
-                warningList.forEach(staff => {
-                    html += `<div style="display: flex; align-items: center; gap: 6px; font-size: 11px; line-height: 1.4;">
-                        <span style="width: 6px; height: 6px; border-radius: 50%; background-color: var(--accent-orange); display: inline-block; flex-shrink: 0;"></span>
-                        <span style="color: var(--accent-orange); font-weight: bold;">${staff.name}</span>
-                        <span style="color: var(--text-muted); font-size: 11px;"> - ${docTypeName} - </span>
-                        <span style="color: var(--accent-orange); font-weight: bold; font-size: 11px; flex-shrink: 0;">متبقي ${staff.days} يوم</span>
-                    </div>`;
-                });
-
-                html += '</div>';
-                return html;
-            }
+            // فرز التنبيهات ليظهر الحرج أولاً
+            warningsList.sort((a, b) => a.days - b.days);
 
             const docsTable = document.getElementById('documentsTableBody');
-            docsTable.innerHTML = `
-                <tr>
-                    <td style="vertical-align: top;">
-                        <div style="font-weight: bold;">متابعة وثائق الهوية/الإقامة من واقع الصيانة</div>
-                        ${renderStaffList(iqamaCriticalStaff, iqamaWarningStaff, 'الهوية/الإقامة')}
-                    </td>
-                    <td style="vertical-align: top; font-weight: bold;">
-                        ${criticalIqamas} حرِج (≤30 يوم) <br>
-                        ${warningIqamas} تنبيه (≤90 يوم)
-                    </td>
-                    <td style="vertical-align: top;"><span class="badge ${iqamaBadgeClass}">${iqamaBadgeText}</span></td>
-                </tr>
-                <tr>
-                    <td style="vertical-align: top;">
-                        <div style="font-weight: bold;">متابعة رخص العمل المتبقية للموظفين</div>
-                        ${renderStaffList(permitCriticalStaff, permitWarningStaff, 'رخصة العمل')}
-                    </td>
-                    <td style="vertical-align: top; font-weight: bold;">
-                        ${criticalWorkPermits} حرِج (≤30 يوم) <br>
-                        ${warningWorkPermits} تنبيه (≤90 يوم)
-                    </td>
-                    <td style="vertical-align: top;"><span class="badge ${permitBadgeClass}">${permitBadgeText}</span></td>
-                </tr>
-                <tr>
-                    <td style="vertical-align: top;">
-                        <div style="font-weight: bold;">متابعة مدد انتهاء عقود العمل الفعلية</div>
-                        ${renderStaffList(contractCriticalStaff, contractWarningStaff, 'عقد العمل')}
-                    </td>
-                    <td style="vertical-align: top; font-weight: bold;">
-                        ${criticalContracts} حرِج (≤30 يوم) <br>
-                        ${warningContracts} تنبيه (≤90 يوم)
-                    </td>
-                    <td style="vertical-align: top;"><span class="badge ${contractBadgeClass}">${contractBadgeText}</span></td>
-                </tr>
-            `;
+            let tableHTML = '';
+
+            if (warningsList.length === 0) {
+                tableHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: var(--accent-green); padding: 25px; font-weight: bold;">
+                            <i class="fa-solid fa-circle-check" style="font-size: 16px; margin-left: 8px;"></i>
+                            جميع وثائق الموظفين مستقرة (أكثر من 90 يوم)
+                        </td>
+                    </tr>
+                `;
+            } else {
+                warningsList.forEach(item => {
+                    const badgeClass = item.isCritical ? 'danger' : 'warning';
+                    const badgeText = item.isCritical ? 'حرج' : 'تنبيه';
+                    const statusColor = item.isCritical ? 'var(--accent-red)' : 'var(--accent-orange)';
+                    
+                    tableHTML += `
+                        <tr>
+                            <td><strong>${item.name}</strong></td>
+                            <td style="color: var(--text-muted);">${item.type}</td>
+                            <td style="font-weight: bold; color: ${statusColor};">متبقي ${item.days} يوم</td>
+                            <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+                        </tr>
+                    `;
+                });
+            }
+
+            docsTable.innerHTML = tableHTML;
 
             // 7. تعبئة قائمة الموظفين السفلية المفصلة بالترتيب الجديد المطلوب والرواتب الكاملة
             const empTable = document.getElementById('employeesTableBody');
