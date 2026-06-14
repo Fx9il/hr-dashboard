@@ -986,6 +986,22 @@
             return isNaN(num) ? 0 : num;
         }
 
+        // دالة مخصصة لحساب المدد المتبقية ومراعاة الكلمات النصية مثل "منتهي" أو الخلايا الفارغة
+        function parseRemainingDays(val) {
+            if (val === undefined || val === null) return null;
+            let str = val.toString().trim();
+            if (str === '') return null; // خلية فارغة تماماً يتم تجاهلها
+
+            // إذا كانت الكلمة تحتوي على "منتهي" أو "منتهية" أو "Expired"
+            if (str.includes('منتهي') || str.includes('منتهية') || str.toLowerCase().includes('expire')) {
+                return 0;
+            }
+
+            // تنظيف القيمة واستخراج الرقم الفعلي
+            let num = parseNumeric(str);
+            return num;
+        }
+
         // دالة مساعدة لربط الأعمدة ديناميكياً بناءً على الكلمات الدلالية وتفادي أخطاء الإزاحة أو الأعمدة الفارغة
         function findKey(sampleRow, keywords) {
             if (!sampleRow) return null;
@@ -994,14 +1010,14 @@
             // 1. فحص المطابقة التامة بعد إزالة الفراغات والمسافات غير المرئية
             for (let k of keys) {
                 const cleanK = k.trim().replace(/[\s\xa0]+/g, ' ').toLowerCase();
-                if (keywords.some(kw => cleanK === kw.toLowerCase())) {
+                if (keywords.some(kw => cleanK === kw.toLowerCase().trim())) {
                     return k;
                 }
             }
             // 2. فحص الاحتواء الجزئي
             for (let k of keys) {
                 const cleanK = k.trim().toLowerCase();
-                if (keywords.some(kw => cleanK.includes(kw.toLowerCase()))) {
+                if (keywords.some(kw => cleanK.includes(kw.toLowerCase().trim()) || kw.toLowerCase().trim().includes(cleanK))) {
                     return k;
                 }
             }
@@ -1045,9 +1061,9 @@
             const keyHireDate = findKey(sampleRow, ['بداية التعيين', 'التعيين', 'تاريخ التعيين']) || 'تاريخ بداية التعيين';
             const keyVacations = findKey(sampleRow, ['رصيد الاجازات', 'رصيد الإجازات']) || 'رصيد الاجازات';
             const keyUsedVacations = findKey(sampleRow, ['الرصيد المستخدم', 'المستخدم']) || 'الرصيد المستخدم';
-            const keyRemIqama = findKey(sampleRow, ['المتبقية من الهوية', 'المتبقية من الإقامة', 'متبقي الهوية', 'متبقي الإقامة']) || 'المدة المتبقية من الهوية/الإقامة';
-            const keyRemWorkPermit = findKey(sampleRow, ['المتبقية من رخصة', 'متبقي رخصة']) || 'المدة المتبقية من رخصة العمل';
-            const keyRemContract = findKey(sampleRow, ['المتبقية من العقد', 'متبقي العقد']) || 'المدة المتبقية من العقد';
+            const keyRemIqama = findKey(sampleRow, ['المدة المتبقية الهوية/الإقامة', 'المتبقية من الهوية', 'المتبقية من الإقامة', 'متبقي الهوية', 'متبقي الإقامة']) || 'المدة المتبقية الهوية/الإقامة';
+            const keyRemWorkPermit = findKey(sampleRow, ['المدة المتبقية من رخصة العمل', 'المتبقية من رخصة', 'متبقي رخصة']) || 'المدة المتبقية من رخصة العمل';
+            const keyRemContract = findKey(sampleRow, ['المدة المتبقية من العقد', 'المتبقية من العقد', 'متبقي العقد']) || 'المدة المتبقية من العقد';
 
             // 1. حساب تفاصيل المرتبات بدقة كاملة باستخدام معالجة parseNumeric الذكية والمفهرسة ديناميكياً
             let totalBasic = 0;
@@ -1127,12 +1143,12 @@
 
             activeEmployees.forEach(emp => {
                 const name = emp[keyEmpName] || '';
-                const remIqama = parseNumeric(emp[keyRemIqama]);
-                const remWorkPermit = parseNumeric(emp[keyRemWorkPermit]);
-                const remContract = parseNumeric(emp[keyRemContract]);
+                const remIqama = parseRemainingDays(emp[keyRemIqama]);
+                const remWorkPermit = parseRemainingDays(emp[keyRemWorkPermit]);
+                const remContract = parseRemainingDays(emp[keyRemContract]);
 
                 // الهوية / الإقامة
-                if (remIqama > 0 && remIqama <= 90) {
+                if (remIqama !== null && remIqama <= 90) {
                     warningsList.push({
                         name: name,
                         type: 'الهوية/الإقامة',
@@ -1142,7 +1158,7 @@
                 }
 
                 // رخصة العمل
-                if (remWorkPermit > 0 && remWorkPermit <= 90) {
+                if (remWorkPermit !== null && remWorkPermit <= 90) {
                     warningsList.push({
                         name: name,
                         type: 'رخصة العمل',
@@ -1152,7 +1168,7 @@
                 }
 
                 // العقد
-                if (remContract > 0 && remContract <= 90) {
+                if (remContract !== null && remContract <= 90) {
                     warningsList.push({
                         name: name,
                         type: 'عقد العمل',
@@ -1182,12 +1198,13 @@
                     const badgeClass = item.isCritical ? 'danger' : 'warning';
                     const badgeText = item.isCritical ? 'حرج' : 'تنبيه';
                     const statusColor = item.isCritical ? 'var(--accent-red)' : 'var(--accent-orange)';
+                    const displayDaysText = item.days <= 0 ? 'منتهية بالفعل' : `متبقي ${item.days} يوم`;
                     
                     tableHTML += `
                         <tr>
                             <td><strong>${item.name}</strong></td>
                             <td style="color: var(--text-muted);">${item.type}</td>
-                            <td style="font-weight: bold; color: ${statusColor};">متبقي ${item.days} يوم</td>
+                            <td style="font-weight: bold; color: ${statusColor};">${displayDaysText}</td>
                             <td><span class="badge ${badgeClass}">${badgeText}</span></td>
                         </tr>
                     `;
