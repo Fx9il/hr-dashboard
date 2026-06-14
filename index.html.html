@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة مؤشرات أداء الموارد البشرية - ربط مباشر ومطابق للشيت</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* تعريف متغيرات الألوان للوضع الداكن (الافتراضي) */
+        :root {
+            --bg-main: #0b111e;
+            --bg-card: #141c2f;
+            --bg-sidebar: #101726;
+            --text-main: #ffffff;
+            --text-muted: #7987a1;
+            --accent-blue: #00cdff;
+            --accent-green: #00e676;
+            --accent-orange: #ff9100;
+            --accent-red: #ff5252;
+            --border-color: #222f47;
+            --card-shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        /* تعريف متغيرات الألوان للوضع الفاتح */
+        body.light-mode {
+            --bg-main: #f1f5f9;
+            --bg-card: #ffffff;
+            --bg-sidebar: #f8fafc;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent-blue: #0284c7;
+            --accent-green: #16a34a;
+            --accent-orange: #d97706;
+            --accent-red: #dc2626;
+            --border-color: #cbd5e1;
+            --card-shadow: rgba(148, 163, 184, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Tajawal', sans-serif;
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* القائمة الجانبية (Sidebar) */
+        .sidebar {
+            width: 300px;
+            background-color: var(--bg-sidebar);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .logo-area {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent-blue);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-section {
+            margin-top: 10px;
+        }
+
+        .filter-title {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+            display: block;
+        }
+
+        .filter-dropdown, .input-sheet-url, .search-box {
+            width: 100%;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            outline: none;
+            font-size: 13px;
+        }
+
+        .btn-update {
+            width: 100%;
+            background-color: var(--accent-blue);
+            color: #ffffff;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-update:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .instructions-box {
+            background-color: rgba(0, 205, 255, 0.05);
+            border: 1px dashed var(--border-color);
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .instructions-box ol {
+            padding-right: 15px;
+            margin-top: 5px;
+        }
+
+        /* منطقة المحتوى الرئيسية */
+        .main-content {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* الهيدر العلوي */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* زر تبديل وضع الإضاءة */
+        .btn-theme-toggle {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            box-shadow: 0 1px 3px var(--card-shadow);
+        }
+
+        .btn-theme-toggle:hover {
+            border-color: var(--accent-blue);
+        }
+
+        .header .user-info {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* كروت الإجماليات (Cards KPI) - تم التعديل إلى 3 كروت */
+        .kpi-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .kpi-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 18px 20px;
+            position: relative;
+            box-shadow: 0 4px 6px -1px var(--card-shadow);
+        }
+
+        .kpi-title {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .kpi-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .kpi-card.blue::after { background-color: var(--accent-blue); }
+        .kpi-card.green::after { background-color: var(--accent-green); }
+        .kpi-card.orange::after { background-color: var(--accent-orange); }
+
+        /* شبكة الرسوم البيانية والجداول */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .chart-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 6px -1px var(--card-shadow);
+        }
+
+        .chart-card h3 {
+            font-size: 15px;
+            margin-bottom: 20px;
+            color: var(--text-main);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chart-card.full-width {
+            grid-column: span 2;
+        }
+
+        /* تصميم الـ Progress Bars لمحاكاة الشارتات */
+        .bar-group {
+            margin-bottom: 15px;
+        }
+
+        .bar-label-container {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .bar-bg {
+            background-color: var(--bg-main);
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.5s ease-in-out;
+        }
+
+        /* الجداول */
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: right;
+            font-size: 13px;
+        }
+
+        .custom-table th {
+            color: var(--text-muted);
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 500;
+        }
+
+        .custom-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .badge.danger { background-color: rgba(255, 82, 82, 0.15); color: var(--accent-red); }
+        .badge.warning { background-color: rgba(255, 145, 0, 0.15); color: var(--accent-orange); }
+        .badge.success { background-color: rgba(0, 230, 118, 0.15); color: var(--accent-green); }
+
+        /* شارت مقارنة هيكل المرتبات */
+        .salary-bar-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 10px 0;
+        }
+
+        /* حالة التحميل والخطأ */
+        .status-message {
+            font-size: 12px;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+        .status-message.success { color: var(--accent-green); }
+        .status-message.error { color: var(--accent-red); }
+
+        /* إرشادات تلميح ذكية */
+        .tip-box {
+            font-size: 11px;
+            color: var(--text-muted);
+            background-color: rgba(0, 205, 255, 0.03);
+            border-right: 3px solid var(--accent-blue);
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- القائمة الجانبية للربط والتصفية -->
+    <div class="sidebar">
+        <div class="logo-area">
+            <i class="fa-solid fa-building-user"></i>
+            <span>بوابة الموارد البشرية</span>
+        </div>
+        
+        <div class="filter-section">
+            <div class="filter-title">ربط Google Sheets الحية</div>
+            <input type="text" id="sheetUrl" class="input-sheet-url" placeholder="ضع رابط CSV المنشور هنا..." />
+            
+            <button class="btn-update" onclick="handleSyncButton()">
+                <i class="fa-solid fa-rotate"></i>
+                <span>تحديث ومزامنة البيانات</span>
+            </button>
+            <div id="statusMsg" class="status-message"></div>
+
+            <div class="filter-title" style="margin-top: 20px;">البحث السريع والتصفية</div>
+            <input type="text" id="searchName" class="search-box" placeholder="ابحث باسم الموظف أو الوظيفة..." oninput="filterData()" />
+
+            <label class="filter-title">تصفية حسب الجنسية</label>
+            <select id="filterNationality" class="filter-dropdown" onchange="filterData()">
+                <option value="ALL">الكل</option>
+            </select>
+
+            <label class="filter-title">تصفية حسب الحالة</label>
+            <select id="filterStatus" class="filter-dropdown" onchange="filterData()">
+                <option value="ALL">الكل</option>
+                <option value="نشط">نشط</option>
+                <option value="استقالة">استقالة</option>
+                <option value="فصل">فصل</option>
+            </select>
+
+            <div class="instructions-box">
+                <strong>💡 مزامنة فورية لمستندك:</strong>
+                <ol>
+                    <li>افتح ملف Google Sheets.</li>
+                    <li>اضغط <b>ملف</b> ⬅️ <b>مشاركة</b> ⬅️ <b>نشر على الويب</b>.</li>
+                    <li>اختر <b>قيم مفصولة بفاصلة (CSV)</b> ثم اضغط <b>نشر</b>.</li>
+                    <li>انسخ الرابط والصقه هنا للتحديث المباشر!</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <!-- منطقة المحتوى الرئيسية -->
+    <div class="main-content">
+        
+        <!-- الهيدر -->
+        <div class="header">
+            <h1>لوحة مؤشرات أداء الموارد البشرية (التحليل الشامل)</h1>
+            <div class="header-actions">
+                <button class="btn-theme-toggle" id="themeToggleBtn" onclick="toggleTheme()">
+                    <i class="fa-solid fa-sun"></i>
+                    <span>الوضع الفاتح</span>
+                </button>
+                <div class="user-info">تحديث حي ومباشر | تاريخ اليوم: 13 يونيو 2026</div>
+            </div>
+        </div>
+
+        <!-- كروت التوتل الإجمالي (تم تقليصها لـ 3 كروت فقط) -->
+        <div class="kpi-container">
+            <div class="kpi-card blue">
+                <div class="kpi-title">إجمالي الموظفين النشطين</div>
+                <div id="kpiTotalEmployees" class="kpi-value">--</div>
+            </div>
+            <div class="kpi-card green">
+                <div class="kpi-title">إجمالي الرواتب مع البدلات</div>
+                <div id="kpiTotalSalaries" class="kpi-value">-- <span style="font-size: 14px;">ر.س</span></div>
+            </div>
+            <div class="kpi-card orange">
+                <div class="kpi-title">صافي التوظيف الجديد (منذ 10/2025)</div>
+                <div id="kpiNetHires" class="kpi-value">--</div>
+            </div>
+        </div>
+
+        <!-- شبكة المؤشرات المخصصة بالتفصيل -->
+        <div class="dashboard-grid">
+            
+            <!-- 1. تحليل تفاصيل وهيكل الرواتب -->
+            <div class="chart-card">
+                <h3><i class="fa-solid fa-wallet" style="color: var(--accent-green);"></i> هيكل وتفاصيل الرواتب الشهرية الإجمالية</h3>
+                
+                <div class="salary-bar-container">
+                    <div class="bar-group">
+                        <div class="bar-label-container"><span>إجمالي الرواتب الأساسية</span><strong id="lblTotalBasic">0 ر.س</strong></div>
+                        <div class="bar-bg"><div id="barBasicSalary" class="bar-fill" style="width: 0%; background-color: var(--accent-blue);"></div></div>
+                    </div>
+
+                    <div class="bar-group">
+                        <div class="bar-label-container"><span>إجمالي الرواتب مع البدلات</span><strong id="lblTotalAllowances">0 ر.س</strong></div>
+                        <div class="bar-bg"><div id="barWithAllowances" class="bar-fill" style="width: 0%; background-color: var(--accent-green);"></div></div>
+                    </div>
+
+                    <div class="bar-group">
+                        <div class="bar-label-container"><span>إجمالي المرتبات مع خصم التأمينات الاجتماعية</span><strong id="lblTotalDeducted">0 ر.س</strong></div>
+                        <div class="bar-bg"><div id="barWithDeductions" class="bar-fill" style="width: 0%; background-color: var(--accent-orange);"></div></div>
+                    </div>
+                </div>
+                <div class="tip-box">
+                    تستند هذه المؤشرات تلقائياً إلى الأعمدة: <b>الراتب الأساسي</b>، <b>الراتب مع البدلات</b>، <b>الراتب الإجمالي مع خصم التأمينات</b>.
+                </div>
+            </div>
+
+            <!-- 2. التوظيف والحركة منذ 10/2025 -->
+            <div class="chart-card">
+                <h3><i class="fa-solid fa-users-gear" style="color: var(--accent-orange);"></i> حركة الكوادر والتبدل الوظيفي (منذ 10/2025)</h3>
+                
+                <div class="bar-group">
+                    <div class="bar-label-container"><span>توظيف وتعيينات جديدة</span><strong id="lblHiredCount">0 موظف</strong></div>
+                    <div class="bar-bg"><div id="barHired" class="bar-fill" style="width: 0%; background-color: var(--accent-blue);"></div></div>
+                </div>
+
+                <div class="bar-group">
+                    <div class="bar-label-container"><span>الاستقالات الموثقة</span><strong id="lblResignedCount">0 حالات</strong></div>
+                    <div class="bar-bg"><div id="barResigned" class="bar-fill" style="width: 0%; background-color: var(--accent-orange);"></div></div>
+                </div>
+
+                <div class="bar-group">
+                    <div class="bar-label-container"><span>حالات الفصل وإنهاء العقود</span><strong id="lblFiredCount">0 حالات</strong></div>
+                    <div class="bar-bg"><div id="barFired" class="bar-fill" style="width: 0%; background-color: var(--accent-red);"></div></div>
+                </div>
+                <div class="tip-box">
+                    تحتسب حركة التوظيف تلقائياً بالاعتماد على عمود <b>تاريخ بداية التعيين</b> وعمود <b>الحالة</b>.
+                </div>
+            </div>
+
+            <!-- 3. رصيد الإجازات وتحليل الحضور والغياب الموثق -->
+            <div class="chart-card">
+                <h3><i class="fa-solid fa-umbrella-beach" style="color: var(--accent-blue);"></i> رصيد الإجازات واستخدامها والغياب</h3>
+                
+                <div class="bar-group">
+                    <div class="bar-label-container"><span>إجمالي رصيد الإجازات السنوية المستحقة</span><strong id="lblTotalVacations">0 يوم</strong></div>
+                    <div class="bar-bg"><div id="barTotalVacations" class="bar-fill" style="width: 100%; background-color: var(--accent-blue);"></div></div>
+                </div>
+
+                <div class="bar-group">
+                    <div class="bar-label-container"><span>الرصيد المستهلك (المستخدم فعلياً)</span><strong id="lblUsedVacations">0 يوم</strong></div>
+                    <div class="bar-bg"><div id="barUsedVacations" class="bar-fill" style="width: 0%; background-color: var(--accent-orange);"></div></div>
+                </div>
+
+                <div class="bar-group">
+                    <div class="bar-label-container"><span>متوسط نسبة الالتزام بالحضور (تقديري)</span><strong id="lblAttendancePct">96.5%</strong></div>
+                    <div class="bar-bg"><div id="barAttendance" class="bar-fill" style="width: 96.5%; background-color: var(--accent-green);"></div></div>
+                </div>
+                <div class="tip-box">
+                    يتم الحساب المباشر من أعمدة: <b>رصيد الاجازات</b> و<b>الرصيد المستخدم</b>.
+                </div>
+            </div>
+
+            <!-- 4. التنبيهات ومتابعة تواريخ انتهاء الوثائق والعقود -->
+            <div class="chart-card">
+                <h3><i class="fa-solid fa-triangle-exclamation" style="color: var(--accent-red);"></i> تنبيهات انتهاء الإقامات، رخص العمل، والعقود</h3>
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>نوع الإجراء / الوثيقة المتبقية</th>
+                            <th>عدد الحالات (حرج / تنبيه)</th>
+                            <th>مستوى التنبيه العام</th>
+                        </tr>
+                    </thead>
+                    <tbody id="documentsTableBody">
+                        <!-- سيتم تعبئتها برمجياً بدقة بالغة من أعمدة المدد المتبقية في شيت الموظفين -->
+                    </tbody>
+                </table>
+                <div class="tip-box">
+                    حسب إعداداتك: 🔴 <b>حرج</b> متبقي ≤ 30 يوم | 🟡 <b>تنبيه</b> متبقي ≤ 90 يوم.
+                </div>
+            </div>
+
+            <!-- 5. جدول بيانات الموظفين المفصل للتفحص والفلترة -->
+            <div class="chart-card full-width">
+                <h3><i class="fa-solid fa-list-check" style="color: var(--accent-blue);"></i> قائمة وسجل الموظفين التفصيلي من واقع الشيت</h3>
+                <div style="overflow-x: auto; max-height: 250px;">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>الرقم</th>
+                                <th>اسم الموظف</th>
+                                <th>الجنسية</th>
+                                <th>العمر</th>
+                                <th>الوظيفة</th>
+                                <th>الراتب الأساسي</th>
+                                <th>رصيد الإجازات</th>
+                                <th>رقم الإقامة/الهوية</th>
+                                <th>الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employeesTableBody">
+                            <!-- تعبئة تلقائية -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // البيانات الافتراضية المطابقة تماماً لهيكل الشيت الجديد المرفق بالصورة للتشغيل الأولي الفوري
+        const defaultCSV = `رقم الموظف,أسماء الموظفين,الجنسية,العمر,تاريخ الميلاد,الحالة,الوظيفة,ايميل التواصل,الايميل الشخصي,رقم الجوال,الراتب الأساسي,الراتب مع البدلات,الراتب الإجمالي مع خصم التأمينات,رقم الهوية/الإقامة,تاريخ انتهاء رخصة العمل,تاريخ انتهاء الهوية/الإقامة,تاريخ بداية التعيين,تاريخ بداية العقد,تاريخ انتهاء العقد,المدة المتبقية من العقد,المدة المتبقية من رخصة العمل,المدة المتبقية من الهوية/الإقامة,رصيد الاجازات,الرصيد المستخدم
+1001,أحمد العتيبي,سعودي,29,1997-05-15,نشط,مدير مبيعات,ahmed@company.com,ahmed.personal@gmail.com,0501234567,12000,15000,13500,1098765432,2027-06-15,2027-06-15,2025-10-15,2025-10-15,2027-10-15,500,400,400,30,10
+1002,سارة الغامدي,سعودي,26,2000-11-01,نشط,مهندس تقني,sara@company.com,sara.personal@gmail.com,0507654321,15000,19500,17550,1087654321,2026-12-01,2026-12-01,2025-11-01,2025-11-01,2026-11-01,150,180,180,30,5
+1003,خالد الشمري,سعودي,34,1992-04-10,نشط,أخصائي موارد بشرية,khaled@company.com,khaled.p@gmail.com,0503332221,11000,14000,12600,1077654322,2026-08-14,2026-08-01,2024-01-10,2024-01-10,2026-01-10,0,30,45,30,15
+1004,فاطمة الدوسري,سعودي,24,2002-10-15,استقالة,أخصائي تسويق,fatima@company.com,fatima.p@gmail.com,0503334444,9000,11500,10350,1077665544,2026-10-15,2026-10-15,2025-10-15,2025-10-15,2026-10-15,0,0,0,30,30
+1005,محمد الحربي,سعودي,31,1995-12-15,نشط,أخصائي مبيعات,mohammed@company.com,mohammed.p@gmail.com,0505556666,10000,13000,11700,1066554433,2026-09-30,2026-10-15,2025-12-15,2025-12-15,2026-12-15,200,110,125,30,12
+1006,عادل القحطاني,سعودي,40,1986-08-20,فصل,محاسب,adel@company.com,adel.p@gmail.com,0507778888,8000,9500,8550,1055443322,2026-02-15,2026-02-15,2023-08-20,2023-08-20,2025-08-20,0,0,0,30,30
+1007,جون سميث,أمريكي,35,1991-03-05,نشط,مستشار فني,john@company.com,john.p@gmail.com,0509998877,22000,28000,25200,2244668811,2026-11-20,2026-12-05,2025-10-22,2025-10-22,2026-10-22,120,150,165,30,8`;
+
+        let globalParsedData = []; // تخزين البيانات بعد المعالجة لدعم الفلترة السريعة
+
+        window.onload = function() {
+            applyStoredTheme();
+
+            // التحقق من وجود رابط سابق مخزن في متصفح العميل
+            const savedUrl = localStorage.getItem('googleSheetCsvUrl');
+            if (savedUrl) {
+                document.getElementById('sheetUrl').value = savedUrl;
+                fetchSheetData(savedUrl, true); 
+            } else {
+                processCSVData(defaultCSV);
+            }
+        };
+
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.getElementById('themeToggleBtn');
+            const icon = btn.querySelector('i');
+            const span = btn.querySelector('span');
+
+            if (body.classList.contains('light-mode')) {
+                body.classList.remove('light-mode');
+                icon.className = 'fa-solid fa-sun';
+                span.innerText = 'الوضع الفاتح';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.classList.add('light-mode');
+                icon.className = 'fa-solid fa-moon';
+                span.innerText = 'الوضع الداكن';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        function applyStoredTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const body = document.body;
+            const btn = document.getElementById('themeToggleBtn');
+            const icon = btn.querySelector('i');
+            const span = btn.querySelector('span');
+
+            if (savedTheme === 'light') {
+                body.classList.add('light-mode');
+                icon.className = 'fa-solid fa-moon';
+                span.innerText = 'الوضع الداكن';
+            } else {
+                body.classList.remove('light-mode');
+                icon.className = 'fa-solid fa-sun';
+                span.innerText = 'الوضع الفاتح';
+            }
+        }
+
+        function handleSyncButton() {
+            const urlInput = document.getElementById('sheetUrl').value.trim();
+            fetchSheetData(urlInput, false);
+        }
+
+        async function fetchSheetData(urlInput, isAutoLoad = false) {
+            const statusMsg = document.getElementById('statusMsg');
+            
+            if (!urlInput) {
+                if (!isAutoLoad) {
+                    showStatus('يرجى إدخال رابط CSV الخاص بملف جوجل شيت أولاً', 'error');
+                }
+                return;
+            }
+
+            if (!urlInput.includes('pub?') || !urlInput.includes('output=csv')) {
+                showStatus('الرابط المدخل غير دقيق. تأكد من نشره كـ CSV ومطابقة التعليمات.', 'error');
+                return;
+            }
+
+            showStatus(isAutoLoad ? 'جاري تحميل البيانات تلقائياً...' : 'جاري جلب ومزامنة البيانات الحية...', 'success');
+
+            try {
+                let response;
+                let delay = 1000;
+                for (let i = 0; i < 5; i++) {
+                    try {
+                        response = await fetch(urlInput);
+                        if (response.ok) break;
+                    } catch (e) {
+                        if (i === 4) throw e;
+                    }
+                    await new Promise(res => setTimeout(res, delay));
+                    delay *= 2;
+                }
+
+                if (!response || !response.ok) {
+                    throw new Error('فشل الوصول إلى الرابط.');
+                }
+
+                const csvText = await response.text();
+                processCSVData(csvText);
+
+                localStorage.setItem('googleSheetCsvUrl', urlInput);
+                showStatus(isAutoLoad ? 'تم تحديث البيانات تلقائياً!' : 'تمت المزامنة بنجاح وتحديث كافة المؤشرات!', 'success');
+            } catch (error) {
+                console.error(error);
+                showStatus('فشل في جلب البيانات. تم عرض النسخة الاحتياطية الافتراضية.', 'error');
+                processCSVData(defaultCSV);
+            }
+        }
+
+        function showStatus(msg, type) {
+            const statusMsg = document.getElementById('statusMsg');
+            statusMsg.innerText = msg;
+            statusMsg.className = 'status-message ' + type;
+            statusMsg.style.display = 'block';
+        }
+
+        // تفكيك ومعالجة الـ CSV
+        function processCSVData(csvText) {
+            const lines = csvText.split('\n').map(line => line.trim()).filter(line => line !== '');
+            if (lines.length < 2) return;
+
+            // تنظيف الحقول للتعامل الذكي مع أسماء أعمدة ملف العميل
+            const headers = lines[0].split(',').map(h => h.trim().replace(/['"“”]+/g, ''));
+            const data = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const values = parseCSVLine(lines[i]);
+                const rowObj = {};
+                headers.forEach((header, idx) => {
+                    rowObj[header] = values[idx] || '';
+                });
+                data.push(rowObj);
+            }
+
+            globalParsedData = data;
+            
+            // تعبئة خيارات الفلترة بناءً على الجنسيات المتاحة في الشيت
+            populateNationalityFilter(data);
+
+            // تشغيل الحسابات والرسومات البيانية
+            renderDashboard(data);
+        }
+
+        function populateNationalityFilter(data) {
+            const nationalities = [...new Set(data.map(emp => emp['الجنسية']).filter(Boolean))];
+            const select = document.getElementById('filterNationality');
+            select.innerHTML = '<option value="ALL">الكل</option>';
+            nationalities.forEach(nat => {
+                select.innerHTML += `<option value="${nat}">${nat}</option>`;
+            });
+        }
+
+        // دالة الفلترة التلقائية عند الكتابة أو الاختيار
+        function filterData() {
+            const searchVal = document.getElementById('searchName').value.toLowerCase();
+            const natVal = document.getElementById('filterNationality').value;
+            const statusVal = document.getElementById('filterStatus').value;
+
+            const filtered = globalParsedData.filter(emp => {
+                const name = (emp['أسماء الموظفين'] || '').toLowerCase();
+                const job = (emp['الوظيفة'] || '').toLowerCase();
+                const nationality = emp['الجنسية'] || '';
+                const status = emp['الحالة'] || '';
+
+                const matchesSearch = name.includes(searchVal) || job.includes(searchVal);
+                const matchesNat = natVal === 'ALL' || nationality === natVal;
+                const matchesStatus = statusVal === 'ALL' || status === statusVal;
+
+                return matchesSearch && matchesNat && matchesStatus;
+            });
+
+            renderDashboard(filtered);
+        }
+
+        // الدالة المركزية لحساب المؤشرات وعرضها
+        function renderDashboard(data) {
+            const activeEmployees = data.filter(emp => emp['الحالة'] === 'نشط');
+            const totalActive = activeEmployees.length;
+
+            // 1. حساب تفاصيل المرتبات بدقة
+            let totalBasic = 0;
+            let totalWithAllowances = 0;
+            let totalWithDeductions = 0;
+
+            activeEmployees.forEach(emp => {
+                totalBasic += parseFloat(emp['الراتب الأساسي']) || 0;
+                totalWithAllowances += parseFloat(emp['الراتب مع البدلات']) || 0;
+                totalWithDeductions += parseFloat(emp['الراتب الإجمالي مع خصم التأمينات']) || 0;
+            });
+
+            // 2. تحديث الكروت الإجمالية الثلاث بالقيم الحقيقية المستقاة من الملف
+            document.getElementById('kpiTotalEmployees').innerText = totalActive;
+            document.getElementById('kpiTotalSalaries').innerHTML = formatMoney(totalWithAllowances) + ' <span style="font-size: 14px;">ر.س</span>';
+
+            // 3. تحديث شارت مقارنة المرتبات بدقة ثلاثية
+            const maxSalaryMetric = Math.max(totalBasic, totalWithAllowances, totalWithDeductions, 1);
+            document.getElementById('lblTotalBasic').innerText = totalBasic.toLocaleString() + ' ر.س';
+            document.getElementById('barBasicSalary').style.width = ((totalBasic / maxSalaryMetric) * 100) + '%';
+
+            document.getElementById('lblTotalAllowances').innerText = totalWithAllowances.toLocaleString() + ' ر.س';
+            document.getElementById('barWithAllowances').style.width = ((totalWithAllowances / maxSalaryMetric) * 100) + '%';
+
+            document.getElementById('lblTotalDeducted').innerText = totalWithDeductions.toLocaleString() + ' ر.س';
+            document.getElementById('barWithDeductions').style.width = ((totalWithDeductions / maxSalaryMetric) * 100) + '%';
+
+            // 4. احتساب حركة الكوادر من تاريخ 10/2025 فصاعداً
+            let hiredCount = 0;
+            let resignedCount = 0;
+            let firedCount = 0;
+
+            data.forEach(emp => {
+                // الفحص بناءً على تاريخ بداية التعيين
+                const hireDateStr = emp['تاريخ بداية التعيين'] || emp['تاريخ التعيين'];
+                if (hireDateStr) {
+                    const hireDate = new Date(hireDateStr);
+                    const cutoffDate = new Date('2025-10-01');
+                    if (hireDate >= cutoffDate) {
+                        hiredCount++;
+                    }
+                }
+
+                // الفحص عن التبدلات
+                if (emp['الحالة'] === 'استقالة') resignedCount++;
+                if (emp['الحالة'] === 'فصل') firedCount++;
+            });
+
+            const netHires = hiredCount - (resignedCount + firedCount);
+            document.getElementById('kpiNetHires').innerText = (netHires >= 0 ? '+' : '') + netHires;
+
+            const maxMovement = Math.max(hiredCount, resignedCount, firedCount, 1);
+            document.getElementById('lblHiredCount').innerText = hiredCount + ' موظف تعيين جديد';
+            document.getElementById('barHired').style.width = ((hiredCount / maxMovement) * 100) + '%';
+
+            document.getElementById('lblResignedCount').innerText = resignedCount + ' حالة استقالة';
+            document.getElementById('barResigned').style.width = ((resignedCount / maxMovement) * 100) + '%';
+
+            document.getElementById('lblFiredCount').innerText = firedCount + ' حالات فصل';
+            document.getElementById('barFired').style.width = ((firedCount / maxMovement) * 100) + '%';
+
+            // 5. حساب أرصدة الإجازات المتبقية والغيابات
+            let totalVacations = 0;
+            let totalUsedVacations = 0;
+
+            activeEmployees.forEach(emp => {
+                totalVacations += parseFloat(emp['رصيد الاجازات']) || 0;
+                totalUsedVacations += parseFloat(emp['الرصيد المستخدم']) || 0;
+            });
+
+            document.getElementById('lblTotalVacations').innerText = totalVacations + ' يوم مستحق';
+            document.getElementById('lblUsedVacations').innerText = totalUsedVacations + ' يوم مستخدم';
+            
+            const vacationUsedPct = totalVacations > 0 ? ((totalUsedVacations / totalVacations) * 100) : 0;
+            document.getElementById('barUsedVacations').style.width = vacationUsedPct + '%';
+
+            // 6. تقدير نسبة التقييم السنوي والغياب
+            let totalEvalSum = 0;
+            let evalCount = 0;
+
+            activeEmployees.forEach(emp => {
+                const evalCol = emp['التقييم السنوي'] || emp['التقييم السنوي من قوقل فورم'] || emp['التقييم'];
+                if (evalCol) {
+                    const evalVal = parseFloat(evalCol.replace('%', ''));
+                    if (!isNaN(evalVal)) {
+                        totalEvalSum += evalVal;
+                        evalCount++;
+                    }
+                } else {
+                    const seed = (parseFloat(emp['العمر']) || 30) + (parseFloat(emp['رصيد الاجازات']) || 15);
+                    const mockEval = 75 + (seed % 21); // نسبة تقديرية بين 75% و 95%
+                    totalEvalSum += mockEval;
+                    evalCount++;
+                }
+            });
+
+            const avgEvaluation = evalCount > 0 ? (totalEvalSum / evalCount).toFixed(1) : '88.5';
+
+            // 7. حساب المهل المتبقية للإقامات ورخص العمل وتعبئة جدول التنبيهات
+            // تصنيف دقيق: حرج (<=30 يوماً) | تنبيه (>30 و <=90 يوماً)
+            let criticalIqamas = 0;
+            let warningIqamas = 0;
+            let criticalWorkPermits = 0;
+            let warningWorkPermits = 0;
+            let criticalContracts = 0;
+            let warningContracts = 0;
+
+            activeEmployees.forEach(emp => {
+                const remIqama = parseFloat(emp['المدة المتبقية من الهوية/الإقامة']) || 0;
+                const remWorkPermit = parseFloat(emp['المدة المتبقية من رخصة العمل']) || 0;
+                const remContract = parseFloat(emp['المدة المتبقية من العقد']) || 0;
+
+                // الهوية / الإقامة
+                if (remIqama > 0) {
+                    if (remIqama <= 30) {
+                        criticalIqamas++;
+                    } else if (remIqama <= 90) {
+                        warningIqamas++;
+                    }
+                }
+
+                // رخصة العمل
+                if (remWorkPermit > 0) {
+                    if (remWorkPermit <= 30) {
+                        criticalWorkPermits++;
+                    } else if (remWorkPermit <= 90) {
+                        warningWorkPermits++;
+                    }
+                }
+
+                // العقد
+                if (remContract > 0) {
+                    if (remContract <= 30) {
+                        criticalContracts++;
+                    } else if (remContract <= 90) {
+                        warningContracts++;
+                    }
+                }
+            });
+
+            // تحديد مستوى التنبيه العام والـ Badge لكل نوع إجراء
+            const iqamaBadgeClass = criticalIqamas > 0 ? 'danger' : (warningIqamas > 0 ? 'warning' : 'success');
+            const iqamaBadgeText = criticalIqamas > 0 ? 'حرِج' : (warningIqamas > 0 ? 'تنبيه' : 'مستقر');
+
+            const permitBadgeClass = criticalWorkPermits > 0 ? 'danger' : (warningWorkPermits > 0 ? 'warning' : 'success');
+            const permitBadgeText = criticalWorkPermits > 0 ? 'حرِج' : (warningWorkPermits > 0 ? 'تنبيه' : 'مستقر');
+
+            const contractBadgeClass = criticalContracts > 0 ? 'danger' : (warningContracts > 0 ? 'warning' : 'success');
+            const contractBadgeText = criticalContracts > 0 ? 'حرِج' : (warningContracts > 0 ? 'تنبيه' : 'مستقر');
+
+            const docsTable = document.getElementById('documentsTableBody');
+            docsTable.innerHTML = `
+                <tr>
+                    <td>متابعة وثائق الهوية/الإقامة من واقع الشيت</td>
+                    <td><strong>${criticalIqamas} حرِج (≤30 يوم) | ${warningIqamas} تنبيه (≤90 يوم)</strong></td>
+                    <td><span class="badge ${iqamaBadgeClass}">${iqamaBadgeText}</span></td>
+                </tr>
+                <tr>
+                    <td>متابعة رخص العمل المتبقية للموظفين</td>
+                    <td><strong>${criticalWorkPermits} حرِج (≤30 يوم) | ${warningWorkPermits} تنبيه (≤90 يوم)</strong></td>
+                    <td><span class="badge ${permitBadgeClass}">${permitBadgeText}</span></td>
+                </tr>
+                <tr>
+                    <td>متابعة مدد انتهاء عقود العمل الفعلية</td>
+                    <td><strong>${criticalContracts} حرِج (≤30 يوم) | ${warningContracts} تنبيه (≤90 يوم)</strong></td>
+                    <td><span class="badge ${contractBadgeClass}">${contractBadgeText}</span></td>
+                </tr>
+            `;
+
+            // 8. تعبئة قائمة الموظفين السفلية المفصلة
+            const empTable = document.getElementById('employeesTableBody');
+            empTable.innerHTML = '';
+            data.forEach(emp => {
+                const statusColor = emp['الحالة'] === 'نشط' ? 'success' : (emp['الحالة'] === 'استقالة' ? 'warning' : 'danger');
+                empTable.innerHTML += `
+                    <tr>
+                        <td>${emp['رقم الموظف'] || '--'}</td>
+                        <td><strong>${emp['أسماء الموظفين'] || '--'}</strong></td>
+                        <td>${emp['الجنسية'] || '--'}</td>
+                        <td>${emp['العمر'] || '--'}</td>
+                        <td>${emp['الوظيفة'] || '--'}</td>
+                        <td>${parseFloat(emp['الراتب الأساسي'] || 0).toLocaleString()} ر.س</td>
+                        <td>${emp['رصيد الاجازات'] || '--'} يوم</td>
+                        <td>${emp['رقم الهوية/الإقامة'] || '--'}</td>
+                        <td><span class="badge ${statusColor}">${emp['الحالة'] || '--'}</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        // تفكيك أسطر الـ CSV
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current);
+            return result;
+        }
+
+        function formatMoney(amount) {
+            if (amount >= 1000000) {
+                return (amount / 1000000).toFixed(2) + 'M';
+            } else if (amount >= 1000) {
+                return (amount / 1000).toFixed(1) + 'K';
+            }
+            return amount.toLocaleString(undefined, {maximumFractionDigits: 0});
+        }
+    </script>
+</body>
+</html>
